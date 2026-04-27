@@ -10,8 +10,8 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class MsRegistroApplication {
 
     public static void main(String[] args) {
-        // Carga de variables de entorno
-        Dotenv dotenv = Dotenv.load();
+        // Carga de variables de entorno (opcional, útil para desarrollo local)
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
         dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 
         // Arranque de la aplicación
