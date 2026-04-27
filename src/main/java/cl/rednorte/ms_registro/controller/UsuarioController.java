@@ -1,18 +1,22 @@
 package cl.rednorte.ms_registro.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.UUID;
-import cl.rednorte.ms_registro.entity.Usuario;
+
+import cl.rednorte.ms_registro.dto.UsuarioRequestDTO;
+import cl.rednorte.ms_registro.dto.UsuarioResponseDTO;
 import cl.rednorte.ms_registro.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,29 +28,45 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    // Endpoint GET (Leer)
+    // --- LEER TODOS ---
     @GetMapping
-    public ResponseEntity<List<Usuario>> listarUsuarios() {
+    public ResponseEntity<List<UsuarioResponseDTO>> listarUsuarios() {
         return ResponseEntity.ok(usuarioService.listarTodos());
     }
 
-    // Endpoint POST (Crear) - ¡Fíjate en el @Valid!
-    @PostMapping
-    public ResponseEntity<Usuario> registrarUsuario(@Valid @RequestBody Usuario usuario) {
-        Usuario usuarioCreado = usuarioService.registrarUsuario(usuario);
-        return new ResponseEntity<>(usuarioCreado, HttpStatus.CREATED);
-    }
-
-    // Endpoint GET por RUT (Ejemplo: /api/usuarios/rut/11222333-4)
+    // --- LEER POR RUT ---
     @GetMapping("/rut/{rut}")
-    public ResponseEntity<Usuario> obtenerUsuarioPorRut(@PathVariable String rut) {
+    public ResponseEntity<UsuarioResponseDTO> obtenerUsuarioPorRut(@PathVariable String rut) {
         return ResponseEntity.ok(usuarioService.obtenerPorRut(rut));
     }
 
-    // Endpoint PUT (Actualizar)
+    // --- CREAR ---
+    @PostMapping
+    public ResponseEntity<UsuarioResponseDTO> registrarUsuario(@Valid @RequestBody UsuarioRequestDTO dto) {
+        return new ResponseEntity<>(usuarioService.registrarUsuario(dto), HttpStatus.CREATED);
+    }
+
+    // --- ACTUALIZAR COMPLETO (PUT) ---
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizarUsuario(@PathVariable UUID id, @Valid @RequestBody Usuario usuario) {
-        Usuario usuarioActualizado = usuarioService.actualizarUsuario(id, usuario);
-        return ResponseEntity.ok(usuarioActualizado);
+    public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(
+            @PathVariable UUID id, 
+            @Valid @RequestBody UsuarioRequestDTO dto) {
+        return ResponseEntity.ok(usuarioService.actualizarUsuario(id, dto));
+    }
+
+    // --- ACTUALIZAR PARCIAL (PATCH) ---
+    @PatchMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> actualizarParcial(
+            @PathVariable UUID id, 
+            @RequestBody UsuarioRequestDTO dto) { 
+        // Nota: Quitamos @Valid porque en PATCH no todos los campos son obligatorios
+        return ResponseEntity.ok(usuarioService.actualizarParcial(id, dto));
+    }
+
+    // --- ELIMINAR (DELETE) ---
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable UUID id) {
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build(); // Retorna un código 204 (Eliminado con éxito, sin contenido que mostrar)
     }
 }

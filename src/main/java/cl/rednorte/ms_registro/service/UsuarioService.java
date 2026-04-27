@@ -1,9 +1,13 @@
 package cl.rednorte.ms_registro.service;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import java.util.UUID;
+
+import cl.rednorte.ms_registro.dto.UsuarioRequestDTO;
+import cl.rednorte.ms_registro.dto.UsuarioResponseDTO;
 import cl.rednorte.ms_registro.entity.Usuario;
 import cl.rednorte.ms_registro.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,51 +18,91 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
-    // Método para LEER
-    public List<Usuario> listarTodos() {
-        return usuarioRepository.findAll();
+    // --- MÉTODO TRADUCTOR (De Entidad a DTO) ---
+    private UsuarioResponseDTO mapearAResponse(Usuario usuario) {
+        UsuarioResponseDTO dto = new UsuarioResponseDTO();
+        dto.setId(usuario.getId());
+        dto.setRut(usuario.getRut());
+        dto.setNombreCompleto(usuario.getNombreCompleto());
+        dto.setCorreo(usuario.getCorreo());
+        dto.setRol(usuario.getRol());
+        dto.setCreadoEn(usuario.getCreadoEn());
+        return dto;
     }
 
-    // Método para CREAR con Reglas de Negocio
-    public Usuario registrarUsuario(Usuario nuevoUsuario) {
-        
-        // 1. Verificamos si el RUT ya existe
-        if (usuarioRepository.existsByRut(nuevoUsuario.getRut())) {
+    // --- LEER ---
+    public List<UsuarioResponseDTO> listarTodos() {
+        return usuarioRepository.findAll()
+                .stream()
+                .map(this::mapearAResponse)
+                .collect(Collectors.toList());
+    }
+
+    public UsuarioResponseDTO obtenerPorRut(String rut) {
+        Usuario usuario = usuarioRepository.findByRut(rut)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró ningún usuario con el RUT: " + rut));
+        return mapearAResponse(usuario);
+    }
+
+    // --- CREAR ---
+    public UsuarioResponseDTO registrarUsuario(UsuarioRequestDTO dto) {
+        if (usuarioRepository.existsByRut(dto.getRut())) {
             throw new IllegalArgumentException("El RUT ingresado ya se encuentra registrado.");
         }
-        
-        // 2. Verificamos si el correo ya existe
-        if (usuarioRepository.existsByCorreo(nuevoUsuario.getCorreo())) {
+        if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
             throw new IllegalArgumentException("El correo ingresado ya se encuentra registrado.");
         }
-        
-        // Si pasa las validaciones, lo guardamos
-        return usuarioRepository.save(nuevoUsuario);
 
-    }
-    // Método para LEER por RUT
-    public Usuario obtenerPorRut(String rut) {
-        return usuarioRepository.findByRut(rut)
-                .orElseThrow(() -> new IllegalArgumentException("No se encontró ningún usuario con el RUT: " + rut));
+        // Convertimos el DTO a Entidad para guardarlo
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setRut(dto.getRut());
+        nuevoUsuario.setNombreCompleto(dto.getNombreCompleto());
+        nuevoUsuario.setCorreo(dto.getCorreo());
+
+        // Guardamos y devolvemos la versión traducida
+        return mapearAResponse(usuarioRepository.save(nuevoUsuario));
     }
 
-    // Método para ACTUALIZAR
-    public Usuario actualizarUsuario(UUID id, Usuario datosActualizados) {
-        // 1. Buscamos si el usuario existe
-        Usuario usuarioExistente = usuarioRepository.findById(id)
+    // --- ACTUALIZAR COMPLETO (PUT) ---
+    public UsuarioResponseDTO actualizarUsuario(UUID id, UsuarioRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con ID: " + id));
 
-        // 2. Validamos que si está cambiando el correo, no use uno que ya le pertenece a otra persona
-        if (!usuarioExistente.getCorreo().equals(datosActualizados.getCorreo()) && 
-            usuarioRepository.existsByCorreo(datosActualizados.getCorreo())) {
+        if (!usuario.getCorreo().equals(dto.getCorreo()) && usuarioRepository.existsByCorreo(dto.getCorreo())) {
             throw new IllegalArgumentException("El nuevo correo ya está en uso por otro usuario.");
         }
 
-        // 3. Actualizamos los datos permitidos
-        usuarioExistente.setNombreCompleto(datosActualizados.getNombreCompleto());
-        usuarioExistente.setCorreo(datosActualizados.getCorreo());
+        usuario.setNombreCompleto(dto.getNombreCompleto());
+        usuario.setCorreo(dto.getCorreo());
         
-        // 4. Guardamos los cambios
-        return usuarioRepository.save(usuarioExistente);
+        return mapearAResponse(usuarioRepository.save(usuario));
+    }
+
+    // --- ACTUALIZAR PARCIAL (PATCH) ---
+    public UsuarioResponseDTO actualizarParcial(UUID id, UsuarioRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con ID: " + id));
+
+        // Solo actualiza si el campo viene con información
+        if (dto.getNombreCompleto() != null && !dto.getNombreCompleto().isBlank()) {
+            usuario.setNombreCompleto(dto.getNombreCompleto());
+        }
+        
+        if (dto.getCorreo() != null && !dto.getCorreo().isBlank()) {
+            if (!usuario.getCorreo().equals(dto.getCorreo()) && usuarioRepository.existsByCorreo(dto.getCorreo())) {
+                throw new IllegalArgumentException("El nuevo correo ya está en uso por otro usuario.");
+            }
+            usuario.setCorreo(dto.getCorreo());
+        }
+
+        return mapearAResponse(usuarioRepository.save(usuario));
+    }
+
+    // --- ELIMINAR (DELETE) ---
+    public void eliminarUsuario(UUID id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new IllegalArgumentException("Usuario no encontrado con ID: " + id);
+        }
+        usuarioRepository.deleteById(id);
     }
 }
