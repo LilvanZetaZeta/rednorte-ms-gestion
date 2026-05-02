@@ -46,14 +46,18 @@ public class ReservaController {
         return new ResponseEntity<>(reservaService.crearReserva(dto), HttpStatus.CREATED);
     }
 
+    // --- PROTECCIÓN DE ARQUITECTURA ---
+    // Al agregar el Regex en la ruta, garantizamos que "id" sea estrictamente un UUID válido.
+    // Evita choques de rutas y previene ataques de inyección en la URL.
+    
     // Obtener una reserva específica
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}")
     public ResponseEntity<ReservaResponseDTO> obtenerPorId(@PathVariable UUID id) {
         return ResponseEntity.ok(reservaService.obtenerPorId(id));
     }
 
-    // Actualizar reserva (Cambiar fecha o confirmar/cancelar)
-    @PutMapping("/{id}")
+    // Actualizar reserva
+    @PutMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}")
     public ResponseEntity<ReservaResponseDTO> actualizarReserva(
             @PathVariable UUID id,
             @Valid @RequestBody ReservaRequestDTO dto,
