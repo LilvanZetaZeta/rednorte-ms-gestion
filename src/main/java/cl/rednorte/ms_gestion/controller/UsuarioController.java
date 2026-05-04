@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import cl.rednorte.ms_gestion.dto.LoginRequest;
-import cl.rednorte.ms_gestion.dto.LoginResponse;
 import cl.rednorte.ms_gestion.dto.RegistroRequest;
 import cl.rednorte.ms_gestion.entity.Usuario;
 import cl.rednorte.ms_gestion.repository.UsuarioRepository;
@@ -23,34 +22,36 @@ import cl.rednorte.ms_gestion.service.UsuarioService;
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
-    @Autowired private UsuarioService usuarioService;
-    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired 
+    private UsuarioService usuarioService;
+    
+    @Autowired 
+    private UsuarioRepository usuarioRepository;
 
-    @PostMapping("/registro")
-    public ResponseEntity<?> registro(@RequestBody RegistroRequest req) {
+    // --- 1. CREAR PERFIL (Llamado por React justo después de registrarse en Supabase) ---
+    @PostMapping
+    public ResponseEntity<?> registrarPerfil(@RequestBody RegistroRequest req) {
         try {
-            Usuario usuario = usuarioService.registro(req);
-            return ResponseEntity.ok(usuario);
+            // Llamamos al servicio que definimos en el paso anterior
+            Usuario usuario = usuarioService.registrarPerfilPaciente(req);
+            
+            // Retornamos 201 Created
+            return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        try {
-            LoginResponse response = usuarioService.login(req);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
-        }
-    }
+    // --- ¡EL MÉTODO /login FUE ELIMINADO! ---
 
+    // --- 2. LEER TODOS ---
     @GetMapping
-    public List<Usuario> listar() {
-        return usuarioRepository.findAll();
+    public ResponseEntity<List<Usuario>> listar() {
+        // Buena práctica: Retornar siempre un ResponseEntity
+        return ResponseEntity.ok(usuarioRepository.findAll());
     }
 
+    // --- 3. LEER POR ID LOCAL ---
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         return usuarioRepository.findById(id)

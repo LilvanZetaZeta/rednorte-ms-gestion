@@ -1,34 +1,29 @@
 server:
-  port: 8081
+  port: ${PORT}
 
 spring:
   application:
     name: ms-gestion
   datasource:
-    # 1. Le agregamos 'jdbc:' al principio y quitamos el usuario/password de la URL
-    # Cambiamos pgbouncer=true por prepareThreshold=0 (Requisito estricto de Java con Supabase)
-    url: jdbc:postgresql://aws-1-us-east-1.pooler.supabase.com:6543/postgres?prepareThreshold=0
-    
-    # 2. El usuario va acá
-    username: postgres.eqmboygugsouuzoezpvh
-    
-    # 3. Tu contraseña real
-    password: rednorte1234.
-    
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${SUPABASE_JWKS_URI}
+          issuer-uri: ${issuer-uri}
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: false
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-jwt:
-  secret: KoLoimwMui9+TcGommo2TlG+GkK+uOmaQPthE1odUOonwdqf4XcyaahSagJI7TSwbw7BI9vvj6+oIUpkBzAyJg==
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
+# Eliminamos la sección de security de aquí para que mande el SecurityConfig.java
+logging:
+  level:
+    org.springframework.security: DEBUG

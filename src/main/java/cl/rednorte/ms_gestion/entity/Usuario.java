@@ -1,6 +1,5 @@
 package cl.rednorte.ms_gestion.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,6 +12,10 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ESTE ES EL NUEVO PUENTE CON SUPABASE
+    @Column(name = "id_auth", unique = true, nullable = false, length = 50)
+    private String idAuth;
+
     @Column(name = "rut", unique = true, nullable = false, length = 12)
     private String rut;
 
@@ -22,9 +25,7 @@ public class Usuario {
     @Column(name = "correo", unique = true, nullable = false, length = 150)
     private String correo;
 
-    @JsonIgnore
-    @Column(name = "contrasena", nullable = false, length = 255)
-    private String contrasena;
+    // ¡ADIÓS CAMPO DE CONTRASEÑA! Ya no existe en tu base de datos local.
 
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false, columnDefinition = "rol_usuario")
