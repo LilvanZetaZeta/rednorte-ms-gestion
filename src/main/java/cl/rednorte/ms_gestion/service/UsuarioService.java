@@ -1,16 +1,10 @@
 package cl.rednorte.ms_gestion.service;
 
-import cl.rednorte.ms_gestion.JwtUtil;
-import cl.rednorte.ms_gestion.dto.LoginRequest;
-import cl.rednorte.ms_gestion.dto.LoginResponse;
 import cl.rednorte.ms_gestion.dto.RegistroRequest;
 import cl.rednorte.ms_gestion.entity.Usuario;
 import cl.rednorte.ms_gestion.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class UsuarioService {
@@ -18,41 +12,29 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    // ¡ELIMINADOS BCryptPasswordEncoder y JwtUtil! Supabase hace ese trabajo.
 
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
-    public Usuario registro(RegistroRequest req) {
+    public Usuario registrarPerfilPaciente(RegistroRequest req) {
         if (usuarioRepository.existsByCorreo(req.getCorreo()))
-            throw new RuntimeException("El correo ya está registrado");
+            throw new RuntimeException("El correo ya está registrado en el sistema médico.");
         if (usuarioRepository.existsByRut(req.getRut()))
-            throw new RuntimeException("El RUT ya está registrado");
+            throw new RuntimeException("El RUT ya está registrado en el sistema médico.");
 
         Usuario usuario = new Usuario();
+        // IMPORTANTE: Debes agregar este campo a tu Entity y DTO. 
+        // Es el UUID que une tu tabla local con la cuenta real en Supabase.
+        usuario.setIdAuth(req.getIdAuth()); 
+        
         usuario.setRut(req.getRut());
         usuario.setNombreCompleto(req.getNombreCompleto());
         usuario.setCorreo(req.getCorreo());
-        usuario.setContrasena(encoder.encode(req.getContrasena()));
+        
+        // La contraseña se elimina por completo de la Entidad y de la Base de Datos.
         usuario.setRol(req.getRol() != null ? req.getRol() : Usuario.RolUsuario.PACIENTE);
 
         return usuarioRepository.save(usuario);
     }
 
-    public LoginResponse login(LoginRequest req) {
-        Usuario usuario = usuarioRepository.findByCorreo(req.getCorreo())
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
-
-        if (!encoder.matches(req.getContrasena(), usuario.getContrasena()))
-            throw new RuntimeException("Credenciales inválidas");
-
-        String token = jwtUtil.generateToken(usuario.getCorreo(), Map.of(
-                "id", usuario.getId(),
-                "rol", usuario.getRol().name(),
-                "nombre", usuario.getNombreCompleto()
-        ));
-
-        return new LoginResponse(token, usuario.getId(), usuario.getCorreo(),
-                usuario.getNombreCompleto(), usuario.getRol());
-    }
+    // EL MÉTODO login() SE ELIMINA POR COMPLETO.
+    // Tu backend ya no emite tokens ni valida contraseñas. El login ocurre 100% en React.
 }

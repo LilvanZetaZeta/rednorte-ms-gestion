@@ -41,8 +41,9 @@ public class ReservaService {
         return reservaRepository.save(reserva);
     }
 
-    public List<Reserva> findByPaciente(Long pacienteId) {
-        return reservaRepository.findByPacienteId(pacienteId);
+    // Sincronizado con el nuevo nombre del repositorio
+    public List<Reserva> findByPaciente(String idAuth) {
+        return reservaRepository.findByPaciente_IdAuth(idAuth);
     }
 
     public List<Reserva> findAll() {
