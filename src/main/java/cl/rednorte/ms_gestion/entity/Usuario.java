@@ -12,7 +12,6 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ESTE ES EL NUEVO PUENTE CON SUPABASE
     @Column(name = "id_auth", unique = true, nullable = false, length = 50)
     private String idAuth;
 
@@ -24,8 +23,6 @@ public class Usuario {
 
     @Column(name = "correo", unique = true, nullable = false, length = 150)
     private String correo;
-
-    // ¡ADIÓS CAMPO DE CONTRASEÑA! Ya no existe en tu base de datos local.
 
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false, columnDefinition = "rol_usuario")

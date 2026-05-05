@@ -20,6 +20,7 @@ import cl.rednorte.ms_gestion.entity.Usuario;
 import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
 import cl.rednorte.ms_gestion.repository.ListaEsperaLocalRepository;
 import cl.rednorte.ms_gestion.repository.UsuarioRepository;
+import cl.rednorte.ms_gestion.service.ListaEsperaLocalService;
 
 @RestController
 @RequestMapping("/api/lista-espera")
@@ -28,10 +29,16 @@ public class ListaEsperaController {
     @Autowired private ListaEsperaLocalRepository listaRepository;
     @Autowired private CentroMedicoRepository centroRepository;
     @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private ListaEsperaLocalService listaEsperaLocalService;
 
     @GetMapping("/centro/{centroId}")
     public List<ListaEsperaLocal> porCentro(@PathVariable Long centroId) {
         return listaRepository.findByCentroIdOrderByPrioridadAsc(centroId);
+    }
+
+    @GetMapping("/paciente/{pacienteId}")
+    public ResponseEntity<List<ListaEsperaLocal>> obtenerListaPorPaciente(@PathVariable Long pacienteId) {
+        return ResponseEntity.ok(listaEsperaLocalService.obtenerPorPaciente(pacienteId));
     }
 
     @PostMapping
