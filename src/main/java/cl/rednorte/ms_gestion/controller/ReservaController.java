@@ -27,6 +27,21 @@ public class ReservaController {
         return reservaService.findByPaciente(pacienteId);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Reserva> obtenerReservaPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(reservaService.obtenerReservaPorId(id));
+    }
+
+    @GetMapping("/medico/{medicoId}")
+    public ResponseEntity<List<Reserva>> obtenerPorMedico(@PathVariable Long medicoId) {
+        return ResponseEntity.ok(reservaService.obtenerReservasPorMedico(medicoId));
+    }
+
+    @GetMapping("/centro/{centroId}")
+    public ResponseEntity<List<Reserva>> obtenerPorCentro(@PathVariable Long centroId) {
+        return ResponseEntity.ok(reservaService.obtenerReservasPorCentro(centroId));
+    }
+
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody ReservaRequest req) {
         try {

@@ -12,8 +12,6 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // ¡ELIMINADOS BCryptPasswordEncoder y JwtUtil! Supabase hace ese trabajo.
-
     public Usuario registrarPerfilPaciente(RegistroRequest req) {
         if (usuarioRepository.existsByCorreo(req.getCorreo()))
             throw new RuntimeException("El correo ya está registrado en el sistema médico.");
@@ -21,20 +19,25 @@ public class UsuarioService {
             throw new RuntimeException("El RUT ya está registrado en el sistema médico.");
 
         Usuario usuario = new Usuario();
-        // IMPORTANTE: Debes agregar este campo a tu Entity y DTO. 
-        // Es el UUID que une tu tabla local con la cuenta real en Supabase.
         usuario.setIdAuth(req.getIdAuth()); 
-        
         usuario.setRut(req.getRut());
         usuario.setNombreCompleto(req.getNombreCompleto());
         usuario.setCorreo(req.getCorreo());
-        
-        // La contraseña se elimina por completo de la Entidad y de la Base de Datos.
         usuario.setRol(req.getRol() != null ? req.getRol() : Usuario.RolUsuario.PACIENTE);
 
         return usuarioRepository.save(usuario);
     }
 
-    // EL MÉTODO login() SE ELIMINA POR COMPLETO.
-    // Tu backend ya no emite tokens ni valida contraseñas. El login ocurre 100% en React.
+    public Usuario obtenerPorIdAuth(String idAuth) {
+        return usuarioRepository.findByIdAuth(idAuth)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con idAuth: " + idAuth));
+    }
+
+    public Usuario actualizarUsuario(Long id, Usuario usuarioActualizado) {
+        return usuarioRepository.findById(id).map(usuario -> {
+            usuario.setNombreCompleto(usuarioActualizado.getNombreCompleto());
+            usuario.setCorreo(usuarioActualizado.getCorreo());
+            return usuarioRepository.save(usuario);
+        }).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
 }

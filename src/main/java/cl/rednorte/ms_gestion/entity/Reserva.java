@@ -14,14 +14,16 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // CAMBIO 1: Usamos EAGER para asegurar que el paciente viaje al frontend
-    // CAMBIO 2: JsonIgnoreProperties evita errores con los proxies de Hibernate
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "paciente_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Usuario paciente;
 
-    // CAMBIO 3: También para el centro médico para mostrar el nombre en el portal
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "medico_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Usuario medico;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "centro_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

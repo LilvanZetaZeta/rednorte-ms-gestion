@@ -22,11 +22,17 @@ public class ReservaService {
     public Reserva crear(ReservaRequest req) {
         Usuario paciente = usuarioRepository.findById(req.getPacienteId())
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+        
+        // Buscamos al médico en la tabla usuarios
+        Usuario medico = usuarioRepository.findById(req.getMedicoId())
+                .orElseThrow(() -> new RuntimeException("Médico no encontrado"));
+
         CentroMedico centro = centroMedicoRepository.findById(req.getCentroId())
                 .orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
 
         Reserva reserva = new Reserva();
         reserva.setPaciente(paciente);
+        reserva.setMedico(medico); // Lo asignamos a la reserva
         reserva.setCentro(centro);
         reserva.setFechaHora(req.getFechaHora());
         reserva.setOrigen(req.getOrigen());
@@ -41,12 +47,25 @@ public class ReservaService {
         return reservaRepository.save(reserva);
     }
 
-    // Sincronizado con el nuevo nombre del repositorio
     public List<Reserva> findByPaciente(String idAuth) {
         return reservaRepository.findByPaciente_IdAuth(idAuth);
     }
 
     public List<Reserva> findAll() {
         return reservaRepository.findAll();
+    }
+
+    public Reserva obtenerReservaPorId(Long id) {
+        return reservaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+    }
+
+    public List<Reserva> obtenerReservasPorCentro(Long centroId) {
+        return reservaRepository.findByCentroId(centroId);
+    }
+
+    // ¡RESTAURADO!
+    public List<Reserva> obtenerReservasPorMedico(Long medicoId) {
+        return reservaRepository.findByMedicoId(medicoId);
     }
 }
