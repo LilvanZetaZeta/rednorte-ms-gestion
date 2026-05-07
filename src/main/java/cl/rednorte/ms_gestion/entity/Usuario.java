@@ -36,5 +36,5 @@ public class Usuario {
     )
     private List<Especialidad> especialidades;
 
-    public enum RolUsuario { PACIENTE, MEDICO, ADMINISTRATIVO, DIRECTOR }
+    public enum RolUsuario { PACIENTE, MEDICO, ADMINISTRATIVO, DIRECTOR, SECRETARIA }
 }
