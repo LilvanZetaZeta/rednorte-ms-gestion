@@ -3,8 +3,10 @@ package cl.rednorte.ms_gestion.service;
 import cl.rednorte.ms_gestion.dto.RegistroRequest;
 import cl.rednorte.ms_gestion.entity.Usuario;
 import cl.rednorte.ms_gestion.entity.Especialidad;
+import cl.rednorte.ms_gestion.entity.CentroMedico;
 import cl.rednorte.ms_gestion.repository.UsuarioRepository;
 import cl.rednorte.ms_gestion.repository.EspecialidadRepository;
+import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -69,13 +71,26 @@ public class UsuarioService {
         return usuarioRepository.save(u);
     }
 
+    @Autowired private CentroMedicoRepository centroMedicoRepository;
+
     public List<Usuario> listarPersonalStaff() {
         return usuarioRepository.findByRolNot(Usuario.RolUsuario.PACIENTE);
     }
 
     public Usuario actualizarRol(Long id, Usuario.RolUsuario nuevoRol) {
-        Usuario u = obtenerPorId(id);
+        Usuario u = usuarioRepository.findById(id).orElseThrow();
         u.setRol(nuevoRol);
+        return usuarioRepository.save(u);
+    }
+
+    public Usuario actualizarCentroMedico(Long usuarioId, Long centroId) {
+        Usuario u = usuarioRepository.findById(usuarioId).orElseThrow();
+        if (centroId == null) {
+            u.setCentroMedico(null);
+        } else {
+            CentroMedico cm = centroMedicoRepository.findById(centroId).orElseThrow();
+            u.setCentroMedico(cm);
+        }
         return usuarioRepository.save(u);
     }
 
