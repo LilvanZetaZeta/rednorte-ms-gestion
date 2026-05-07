@@ -36,5 +36,9 @@ public class Usuario {
     )
     private List<Especialidad> especialidades;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "centro_medico_id")
+    private CentroMedico centroMedico;
+
     public enum RolUsuario { PACIENTE, MEDICO, ADMINISTRATIVO, DIRECTOR, SECRETARIA }
 }

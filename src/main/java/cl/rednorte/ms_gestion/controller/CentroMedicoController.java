@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/centros")
+@RequestMapping("/api/centros-medicos")
 public class CentroMedicoController {
     @Autowired private CentroMedicoService service;
 

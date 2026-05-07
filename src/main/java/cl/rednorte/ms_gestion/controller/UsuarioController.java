@@ -69,6 +69,12 @@ public class UsuarioController {
         return ResponseEntity.ok(service.actualizarRol(id, nuevoRol));
     }
 
+    @PatchMapping("/{id}/centro")
+    public ResponseEntity<Usuario> actualizarCentro(@PathVariable Long id, @RequestBody Map<String, Long> request) {
+        Long centroId = request.get("centroId");
+        return ResponseEntity.ok(service.actualizarCentroMedico(id, centroId));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminarUsuario(id);
