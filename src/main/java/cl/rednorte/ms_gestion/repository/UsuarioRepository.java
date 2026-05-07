@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,6 +15,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByIdAuth(String idAuth); 
     boolean existsByCorreo(String correo);
     boolean existsByRut(String rut);
+
+    // Búsqueda personalizada
+    List<Usuario> findByRolAndEspecialidades_NombreIgnoreCase(Usuario.RolUsuario rol, String especialidad);
 
     @Query(value = "SELECT count(*) FROM usuario WHERE CAST(rol AS text) = :#{#rol.name()}", nativeQuery = true)
     long countByRol(@Param("rol") Usuario.RolUsuario rol);

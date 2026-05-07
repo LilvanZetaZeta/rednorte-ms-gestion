@@ -1,67 +1,43 @@
 package cl.rednorte.ms_gestion.controller;
 
-import java.util.List;
-import java.util.Map;
-
+import cl.rednorte.ms_gestion.dto.ListaEsperaRequest;
+import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
+import cl.rednorte.ms_gestion.service.ListaEsperaLocalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import cl.rednorte.ms_gestion.dto.ListaEsperaRequest;
-import cl.rednorte.ms_gestion.entity.CentroMedico;
-import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
-import cl.rednorte.ms_gestion.entity.Usuario;
-import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
-import cl.rednorte.ms_gestion.repository.ListaEsperaLocalRepository;
-import cl.rednorte.ms_gestion.repository.UsuarioRepository;
-import cl.rednorte.ms_gestion.service.ListaEsperaLocalService;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/lista-espera")
 public class ListaEsperaController {
+    @Autowired private ListaEsperaLocalService service;
 
-    @Autowired private ListaEsperaLocalRepository listaRepository;
-    @Autowired private CentroMedicoRepository centroRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private ListaEsperaLocalService listaEsperaLocalService;
-
-    @GetMapping("/centro/{centroId}")
-    public List<ListaEsperaLocal> porCentro(@PathVariable Long centroId) {
-        return listaRepository.findByCentroIdOrderByPrioridadAsc(centroId);
+    @GetMapping public List<ListaEsperaLocal> getAll() { 
+        return service.listarTodas(); 
     }
 
-    @GetMapping("/paciente/{pacienteId}")
-    public ResponseEntity<List<ListaEsperaLocal>> obtenerListaPorPaciente(@PathVariable Long pacienteId) {
-        return ResponseEntity.ok(listaEsperaLocalService.obtenerPorPaciente(pacienteId));
+    @GetMapping("/{id}") public ResponseEntity<ListaEsperaLocal> getById(@PathVariable Long id) { 
+        return ResponseEntity.ok(service.obtenerPorId(id)); 
     }
 
-    @PostMapping
-    public ResponseEntity<?> agregar(@RequestBody ListaEsperaRequest req) {
-        try {
-            CentroMedico centro = centroRepository.findById(req.getCentroId())
-                    .orElseThrow(() -> new RuntimeException("Centro no encontrado"));
-            Usuario paciente = usuarioRepository.findById(req.getPacienteId())
-                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
-
-            ListaEsperaLocal entrada = new ListaEsperaLocal();
-            entrada.setCentro(centro);
-            entrada.setPaciente(paciente);
-            entrada.setPrioridad(req.getPrioridad() != null ? req.getPrioridad() : 0);
-            return ResponseEntity.ok(listaRepository.save(entrada));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    @GetMapping("/centro/{centroId}") public List<ListaEsperaLocal> porCentro(@PathVariable Long centroId) { 
+        return service.obtenerPorCentro(centroId); 
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        listaRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/paciente/{pacienteId}") public List<ListaEsperaLocal> porPaciente(@PathVariable Long pacienteId) { 
+        return service.obtenerPorPaciente(pacienteId); 
+    }
+
+    @PostMapping public ResponseEntity<ListaEsperaLocal> create(@RequestBody ListaEsperaRequest req) { 
+        return ResponseEntity.ok(service.crear(req)); 
+    }
+
+    @PutMapping("/{id}") public ResponseEntity<ListaEsperaLocal> update(@PathVariable Long id, @RequestBody ListaEsperaRequest req) { 
+        return ResponseEntity.ok(service.actualizar(id, req)); 
+    }
+
+    @DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable Long id) { 
+        service.eliminar(id); return ResponseEntity.noContent().build(); 
     }
 }

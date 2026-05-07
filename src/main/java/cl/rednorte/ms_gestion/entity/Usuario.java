@@ -2,12 +2,12 @@ package cl.rednorte.ms_gestion.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "usuario")
 public class Usuario {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,7 +28,13 @@ public class Usuario {
     @Column(name = "rol", nullable = false, columnDefinition = "rol_usuario")
     private RolUsuario rol = RolUsuario.PACIENTE;
 
-    public enum RolUsuario {
-        PACIENTE, MEDICO, ADMINISTRATIVO, DIRECTOR
-    }
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "usuario_especialidad",
+        joinColumns = @JoinColumn(name = "usuario_id"),
+        inverseJoinColumns = @JoinColumn(name = "especialidad_id")
+    )
+    private List<Especialidad> especialidades;
+
+    public enum RolUsuario { PACIENTE, MEDICO, ADMINISTRATIVO, DIRECTOR }
 }

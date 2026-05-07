@@ -14,4 +14,5 @@ public class DashboardResumenDTO {
     private long totalPacientes;
     private long totalMedicos;
     private long totalCentros;
+    private long totalEspecialidades;
 }
