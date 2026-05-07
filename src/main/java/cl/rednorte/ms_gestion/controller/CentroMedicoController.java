@@ -1,50 +1,47 @@
 package cl.rednorte.ms_gestion.controller;
 
+import cl.rednorte.ms_gestion.entity.CentroMedico;
+import cl.rednorte.ms_gestion.service.CentroMedicoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import cl.rednorte.ms_gestion.entity.CentroMedico;
-import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
-import cl.rednorte.ms_gestion.service.CentroMedicoService;
-
 @RestController
-@RequestMapping("/api/centros-medicos")
+@RequestMapping("/api/centros")
 public class CentroMedicoController {
-
-    @Autowired private CentroMedicoService centroMedicoService;
-    @Autowired private CentroMedicoRepository centroMedicoRepository;
+    @Autowired private CentroMedicoService service;
 
     @GetMapping
-    public List<CentroMedico> listar() {
-        return centroMedicoRepository.findAll();
+    public List<CentroMedico> listar() { return service.listarTodos(); }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<List<CentroMedico>> buscar(
+            @RequestParam(required = false) String region, 
+            @RequestParam(required = false) String comuna) {
+        return ResponseEntity.ok(service.buscarPorLocalizacion(region, comuna));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CentroMedico> getById(@PathVariable Long id) {
-        return centroMedicoRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<CentroMedico> actualizarCentro(@PathVariable Long id, @RequestBody CentroMedico centro) {
-        return ResponseEntity.ok(centroMedicoService.actualizarCentro(id, centro));
-    }
+    public ResponseEntity<CentroMedico> getById(@PathVariable Long id) { return ResponseEntity.ok(service.obtenerPorId(id)); }
 
     @PostMapping
-    public CentroMedico crear(@RequestBody Map<String, String> body) {
-        CentroMedico centro = new CentroMedico();
-        centro.setNombreSucursal(body.get("nombreSucursal"));
-        return centroMedicoRepository.save(centro);
+    public CentroMedico crear(@RequestBody CentroMedico c) { return service.crearCentro(c); }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CentroMedico> actualizar(@PathVariable Long id, @RequestBody CentroMedico c) {
+        return ResponseEntity.ok(service.actualizarCentro(id, c));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<CentroMedico> parchear(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        return ResponseEntity.ok(service.parchearCentro(id, updates));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        service.eliminarCentro(id);
+        return ResponseEntity.noContent().build();
     }
 }
