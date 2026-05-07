@@ -69,5 +69,15 @@ public class UsuarioService {
         return usuarioRepository.save(u);
     }
 
+    public List<Usuario> listarPersonalStaff() {
+        return usuarioRepository.findByRolNot(Usuario.RolUsuario.PACIENTE);
+    }
+
+    public Usuario actualizarRol(Long id, Usuario.RolUsuario nuevoRol) {
+        Usuario u = obtenerPorId(id);
+        u.setRol(nuevoRol);
+        return usuarioRepository.save(u);
+    }
+
     public void eliminarUsuario(Long id) { usuarioRepository.deleteById(id); }
 }

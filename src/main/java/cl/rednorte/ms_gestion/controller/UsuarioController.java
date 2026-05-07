@@ -58,6 +58,17 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/staff")
+    public ResponseEntity<List<Usuario>> getStaff() {
+        return ResponseEntity.ok(service.listarPersonalStaff());
+    }
+
+    @PatchMapping("/{id}/rol")
+    public ResponseEntity<Usuario> actualizarRol(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        Usuario.RolUsuario nuevoRol = Usuario.RolUsuario.valueOf(request.get("rol").toUpperCase());
+        return ResponseEntity.ok(service.actualizarRol(id, nuevoRol));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminarUsuario(id);
