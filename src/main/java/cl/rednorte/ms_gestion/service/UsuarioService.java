@@ -61,5 +61,13 @@ public class UsuarioService {
         return usuarioRepository.save(u);
     }
 
+    public Usuario asignarRolMedicoPorCorreo(String correo) {
+        Usuario u = usuarioRepository.findByCorreo(correo)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el correo: " + correo));
+        
+        u.setRol(Usuario.RolUsuario.MEDICO);
+        return usuarioRepository.save(u);
+    }
+
     public void eliminarUsuario(Long id) { usuarioRepository.deleteById(id); }
 }
