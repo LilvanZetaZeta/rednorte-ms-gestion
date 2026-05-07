@@ -48,6 +48,16 @@ public class UsuarioController {
         return ResponseEntity.ok(service.parchearUsuario(id, updates)); 
     }
 
+    @PostMapping("/asignar-medico")
+    public ResponseEntity<?> asignarMedico(@RequestBody Map<String, String> request) {
+        try {
+            String correo = request.get("correo");
+            return ResponseEntity.ok(service.asignarRolMedicoPorCorreo(correo));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminarUsuario(id);
