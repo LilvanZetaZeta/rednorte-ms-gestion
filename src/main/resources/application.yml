@@ -18,7 +18,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-# Eliminamos la sección de security de aquí para que mande el SecurityConfig.java
 logging:
   level:
     org.springframework.security: DEBUG
