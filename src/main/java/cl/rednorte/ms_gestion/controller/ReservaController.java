@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
 import cl.rednorte.ms_gestion.entity.Reserva;
 import cl.rednorte.ms_gestion.service.ReservaService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/reservas")
@@ -24,7 +25,7 @@ public class ReservaController {
     @Autowired private ReservaService service;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody ReservaRequest req) {
+    public ResponseEntity<?> crear(@Valid @RequestBody ReservaRequest req) {
         try {
             return ResponseEntity.ok(service.crear(req));
         } catch (RuntimeException e) {
@@ -35,7 +36,7 @@ public class ReservaController {
     @PutMapping("/{id}")
     public ResponseEntity<Reserva> actualizar(
             @PathVariable Long id,
-            @RequestBody ReservaRequest req) {
+            @Valid @RequestBody ReservaRequest req) {
         return ResponseEntity.ok(service.actualizarTotal(id, req));
     }
 

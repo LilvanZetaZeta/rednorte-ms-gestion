@@ -14,14 +14,14 @@ public class ListaEsperaLocalService {
     @Autowired private UsuarioRepository usuarioRepo;
 
     public List<ListaEsperaLocal> listarTodas() { return repository.findAll(); }
-    public ListaEsperaLocal obtenerPorId(Long id) { return repository.findById(id).orElseThrow(); }
+    public ListaEsperaLocal obtenerPorId(Long id) { return repository.findById(id).orElseThrow(() -> new RuntimeException("Registro en lista de espera no encontrado")); }
     public List<ListaEsperaLocal> obtenerPorPaciente(Long pacienteId) { return repository.findByPacienteId(pacienteId); }
     public List<ListaEsperaLocal> obtenerPorCentro(Long centroId) { return repository.findByCentroIdOrderByPrioridadAsc(centroId); }
 
     public ListaEsperaLocal crear(ListaEsperaRequest req) {
         ListaEsperaLocal l = new ListaEsperaLocal();
-        l.setCentro(centroRepo.findById(req.getCentroId()).orElseThrow());
-        l.setPaciente(usuarioRepo.findById(req.getPacienteId()).orElseThrow());
+        l.setCentro(centroRepo.findById(req.getCentroId()).orElseThrow(() -> new RuntimeException("Centro médico no encontrado")));
+        l.setPaciente(usuarioRepo.findById(req.getPacienteId()).orElseThrow(() -> new RuntimeException("Paciente no encontrado")));
         l.setPrioridad(req.getPrioridad());
         return repository.save(l);
     }

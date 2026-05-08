@@ -19,8 +19,8 @@ public class UsuarioService {
     @Autowired private EspecialidadRepository especialidadRepository;
 
     public List<Usuario> listarTodos() { return usuarioRepository.findAll(); }
-    public Usuario obtenerPorId(Long id) { return usuarioRepository.findById(id).orElseThrow(); }
-    public Usuario obtenerPorIdAuth(String idAuth) { return usuarioRepository.findByIdAuth(idAuth).orElseThrow(); }
+    public Usuario obtenerPorId(Long id) { return usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado")); }
+    public Usuario obtenerPorIdAuth(String idAuth) { return usuarioRepository.findByIdAuth(idAuth).orElseThrow(() -> new RuntimeException("Usuario no encontrado")); }
 
     public List<Usuario> buscarMedicosPorEspecialidad(String especialidad) {
         return usuarioRepository.findByRolAndEspecialidades_NombreIgnoreCase(Usuario.RolUsuario.MEDICO, especialidad);
@@ -51,7 +51,7 @@ public class UsuarioService {
             u.setCorreo(req.getCorreo());
             if (req.getEspecialidades() != null) u.setEspecialidades(req.getEspecialidades());
             return usuarioRepository.save(u);
-        }).orElseThrow();
+        }).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     public Usuario parchearUsuario(Long id, Map<String, Object> updates) {
@@ -78,17 +78,17 @@ public class UsuarioService {
     }
 
     public Usuario actualizarRol(Long id, Usuario.RolUsuario nuevoRol) {
-        Usuario u = usuarioRepository.findById(id).orElseThrow();
+        Usuario u = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         u.setRol(nuevoRol);
         return usuarioRepository.save(u);
     }
 
     public Usuario actualizarCentroMedico(Long usuarioId, Long centroId) {
-        Usuario u = usuarioRepository.findById(usuarioId).orElseThrow();
+        Usuario u = usuarioRepository.findById(usuarioId).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         if (centroId == null) {
             u.setCentroMedico(null);
         } else {
-            CentroMedico cm = centroMedicoRepository.findById(centroId).orElseThrow();
+            CentroMedico cm = centroMedicoRepository.findById(centroId).orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
             u.setCentroMedico(cm);
         }
         return usuarioRepository.save(u);

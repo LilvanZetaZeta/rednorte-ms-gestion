@@ -3,6 +3,7 @@ package cl.rednorte.ms_gestion.controller;
 import cl.rednorte.ms_gestion.dto.RegistroRequest;
 import cl.rednorte.ms_gestion.entity.Usuario;
 import cl.rednorte.ms_gestion.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class UsuarioController {
     public ResponseEntity<Usuario> getPerfil(@PathVariable String idAuth) { return ResponseEntity.ok(service.obtenerPorIdAuth(idAuth)); }
 
     @PostMapping
-    public ResponseEntity<?> registrar(@RequestBody RegistroRequest req) {
+    public ResponseEntity<?> registrar(@Valid @RequestBody RegistroRequest req) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarPerfilPaciente(req));
         } catch (RuntimeException e) {
@@ -34,7 +35,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizar(@PathVariable Long id, @RequestBody Usuario u) { 
+    public ResponseEntity<Usuario> actualizar(@PathVariable Long id, @Valid @RequestBody Usuario u) { 
         return ResponseEntity.ok(service.actualizarUsuario(id, u)); 
     }
 

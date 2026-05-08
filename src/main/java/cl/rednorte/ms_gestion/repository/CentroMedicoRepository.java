@@ -7,7 +7,8 @@ import java.util.List;
 
 @Repository
 public interface CentroMedicoRepository extends JpaRepository<CentroMedico, Long> {
-    // Búsquedas personalizadas
+
     List<CentroMedico> findByRegionAndComunaIgnoreCase(String region, String comuna);
+
     List<CentroMedico> findByComunaIgnoreCase(String comuna);
 }
