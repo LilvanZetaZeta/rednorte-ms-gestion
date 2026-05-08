@@ -2,6 +2,7 @@ package cl.rednorte.ms_gestion.controller;
 
 import cl.rednorte.ms_gestion.entity.CentroMedico;
 import cl.rednorte.ms_gestion.service.CentroMedicoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,10 +28,10 @@ public class CentroMedicoController {
     public ResponseEntity<CentroMedico> getById(@PathVariable Long id) { return ResponseEntity.ok(service.obtenerPorId(id)); }
 
     @PostMapping
-    public CentroMedico crear(@RequestBody CentroMedico c) { return service.crearCentro(c); }
+    public CentroMedico crear(@Valid @RequestBody CentroMedico c) { return service.crearCentro(c); }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CentroMedico> actualizar(@PathVariable Long id, @RequestBody CentroMedico c) {
+    public ResponseEntity<CentroMedico> actualizar(@PathVariable Long id, @Valid @RequestBody CentroMedico c) {
         return ResponseEntity.ok(service.actualizarCentro(id, c));
     }
 
