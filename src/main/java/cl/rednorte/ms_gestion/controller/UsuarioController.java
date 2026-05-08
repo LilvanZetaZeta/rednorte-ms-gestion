@@ -24,11 +24,6 @@ public class UsuarioController {
     @GetMapping("/perfil/{idAuth}")
     public ResponseEntity<Usuario> getPerfil(@PathVariable String idAuth) { return ResponseEntity.ok(service.obtenerPorIdAuth(idAuth)); }
 
-    @GetMapping("/medicos/buscar")
-    public ResponseEntity<List<Usuario>> buscarMedicos(@RequestParam String especialidad) {
-        return ResponseEntity.ok(service.buscarMedicosPorEspecialidad(especialidad));
-    }
-
     @PostMapping
     public ResponseEntity<?> registrar(@RequestBody RegistroRequest req) {
         try {
@@ -58,10 +53,6 @@ public class UsuarioController {
         }
     }
 
-    @GetMapping("/staff")
-    public ResponseEntity<List<Usuario>> getStaff() {
-        return ResponseEntity.ok(service.listarPersonalStaff());
-    }
 
     @PatchMapping("/{id}/rol")
     public ResponseEntity<Usuario> actualizarRol(@PathVariable Long id, @RequestBody Map<String, String> request) {
