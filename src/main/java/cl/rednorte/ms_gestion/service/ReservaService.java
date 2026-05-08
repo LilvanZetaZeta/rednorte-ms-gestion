@@ -35,11 +35,11 @@ public class ReservaService {
                 );
 
         Usuario paciente = (esAdmin && req.getPacienteId() != null)
-                ? usuarioRepository.findById(req.getPacienteId()).orElseThrow()
-                : usuarioRepository.findByIdAuth(idAuthActual).orElseThrow();
+                ? usuarioRepository.findById(req.getPacienteId()).orElseThrow(() -> new RuntimeException("Paciente no encontrado"))
+                : usuarioRepository.findByIdAuth(idAuthActual).orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
-        Usuario medico = usuarioRepository.findById(req.getMedicoId()).orElseThrow();
-        CentroMedico centro = centroMedicoRepository.findById(req.getCentroId()).orElseThrow();
+        Usuario medico = usuarioRepository.findById(req.getMedicoId()).orElseThrow(() -> new RuntimeException("Médico no encontrado"));
+        CentroMedico centro = centroMedicoRepository.findById(req.getCentroId()).orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
 
         Reserva reserva = new Reserva();
         reserva.setPaciente(paciente);
@@ -69,8 +69,8 @@ public class ReservaService {
 
     public Reserva actualizarTotal(Long id, ReservaRequest req) {
         Reserva r = obtenerPorId(id);
-        r.setCentro(centroMedicoRepository.findById(req.getCentroId()).orElseThrow());
-        r.setMedico(usuarioRepository.findById(req.getMedicoId()).orElseThrow());
+        r.setCentro(centroMedicoRepository.findById(req.getCentroId()).orElseThrow(() -> new RuntimeException("Centro médico no encontrado")));
+        r.setMedico(usuarioRepository.findById(req.getMedicoId()).orElseThrow(() -> new RuntimeException("Médico no encontrado")));
         r.setFechaHora(req.getFechaHora());
         return reservaRepository.save(r);
     }

@@ -1,6 +1,9 @@
 package cl.rednorte.ms_gestion.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.util.List;
 
@@ -19,9 +22,13 @@ public class Usuario {
     private String rut;
 
     @Column(name = "nombre_completo", nullable = false, length = 200)
+    @NotBlank(message = "El nombre es requerido")
+    @Size(min = 2, max = 200, message = "El nombre debe tener al menos 2 caracteres")
     private String nombreCompleto;
 
     @Column(name = "correo", unique = true, nullable = false, length = 150)
+    @NotBlank(message = "El correo es requerido")
+    @Email(message = "Por favor ingresa un correo válido")
     private String correo;
 
     @Enumerated(EnumType.STRING)

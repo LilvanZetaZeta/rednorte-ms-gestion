@@ -13,7 +13,7 @@ public class CentroMedicoService {
     @Autowired private CentroMedicoRepository repository;
 
     public List<CentroMedico> listarTodos() { return repository.findAll(); }
-    public CentroMedico obtenerPorId(Long id) { return repository.findById(id).orElseThrow(); }
+    public CentroMedico obtenerPorId(Long id) { return repository.findById(id).orElseThrow(() -> new RuntimeException("Centro médico no encontrado")); }
 
     public List<CentroMedico> buscarPorLocalizacion(String region, String comuna) {
         if (region != null && comuna != null) return repository.findByRegionAndComunaIgnoreCase(region, comuna);
@@ -30,7 +30,7 @@ public class CentroMedicoService {
             c.setComuna(req.getComuna());
             c.setDireccion(req.getDireccion());
             return repository.save(c);
-        }).orElseThrow();
+        }).orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
     }
 
     public CentroMedico parchearCentro(Long id, Map<String, Object> updates) {
