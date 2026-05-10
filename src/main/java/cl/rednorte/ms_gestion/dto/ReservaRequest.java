@@ -1,9 +1,10 @@
 package cl.rednorte.ms_gestion.dto;
 
+import java.time.LocalDateTime;
+
 import cl.rednorte.ms_gestion.entity.Reserva.OrigenReserva;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import java.time.LocalDateTime;
 
 @Data
 public class ReservaRequest {

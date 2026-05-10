@@ -1,9 +1,11 @@
 package cl.rednorte.ms_gestion.repository;
 
-import cl.rednorte.ms_gestion.entity.CentroMedico;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+
+import cl.rednorte.ms_gestion.entity.CentroMedico;
 
 @Repository
 public interface CentroMedicoRepository extends JpaRepository<CentroMedico, Long> {

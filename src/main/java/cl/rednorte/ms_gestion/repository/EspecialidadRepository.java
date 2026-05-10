@@ -1,9 +1,11 @@
 package cl.rednorte.ms_gestion.repository;
 
-import cl.rednorte.ms_gestion.entity.Especialidad;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
+
+import cl.rednorte.ms_gestion.entity.Especialidad;
 
 @Repository
 public interface EspecialidadRepository extends JpaRepository<Especialidad, Long> {

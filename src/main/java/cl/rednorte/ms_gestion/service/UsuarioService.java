@@ -1,16 +1,18 @@
 package cl.rednorte.ms_gestion.service;
 
-import cl.rednorte.ms_gestion.dto.RegistroRequest;
-import cl.rednorte.ms_gestion.entity.Usuario;
-import cl.rednorte.ms_gestion.entity.Especialidad;
-import cl.rednorte.ms_gestion.entity.CentroMedico;
-import cl.rednorte.ms_gestion.repository.UsuarioRepository;
-import cl.rednorte.ms_gestion.repository.EspecialidadRepository;
-import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cl.rednorte.ms_gestion.dto.RegistroRequest;
+import cl.rednorte.ms_gestion.entity.CentroMedico;
+import cl.rednorte.ms_gestion.entity.Especialidad;
+import cl.rednorte.ms_gestion.entity.Usuario;
+import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
+import cl.rednorte.ms_gestion.repository.EspecialidadRepository;
+import cl.rednorte.ms_gestion.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
