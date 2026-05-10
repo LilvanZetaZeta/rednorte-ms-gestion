@@ -1,11 +1,13 @@
 package cl.rednorte.ms_gestion.service;
 
-import cl.rednorte.ms_gestion.entity.CentroMedico;
-import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cl.rednorte.ms_gestion.entity.CentroMedico;
+import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
 
 @Service
 public class CentroMedicoService {

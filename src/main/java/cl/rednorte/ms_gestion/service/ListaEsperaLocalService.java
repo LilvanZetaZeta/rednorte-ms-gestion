@@ -1,11 +1,15 @@
 package cl.rednorte.ms_gestion.service;
 
-import cl.rednorte.ms_gestion.dto.ListaEsperaRequest;
-import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
-import cl.rednorte.ms_gestion.repository.*;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
+
+import cl.rednorte.ms_gestion.dto.ListaEsperaRequest;
+import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
+import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
+import cl.rednorte.ms_gestion.repository.ListaEsperaLocalRepository;
+import cl.rednorte.ms_gestion.repository.UsuarioRepository;
 
 @Service
 public class ListaEsperaLocalService {

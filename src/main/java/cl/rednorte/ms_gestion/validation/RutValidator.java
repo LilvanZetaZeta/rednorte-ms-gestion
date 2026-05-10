@@ -1,8 +1,9 @@
 package cl.rednorte.ms_gestion.validation;
 
+import java.util.regex.Pattern;
+
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import java.util.regex.Pattern;
 
 public class RutValidator implements ConstraintValidator<ValidRut, String> {
 

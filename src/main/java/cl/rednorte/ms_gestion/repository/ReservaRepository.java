@@ -1,11 +1,13 @@
 package cl.rednorte.ms_gestion.repository;
 
-import cl.rednorte.ms_gestion.entity.Reserva;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+
+import cl.rednorte.ms_gestion.entity.Reserva;
 
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {

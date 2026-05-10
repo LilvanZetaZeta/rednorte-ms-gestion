@@ -1,11 +1,5 @@
 package cl.rednorte.ms_gestion.controller;
 
-import cl.rednorte.ms_gestion.entity.CentroMedico;
-import cl.rednorte.ms_gestion.service.CentroMedicoService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cl.rednorte.ms_gestion.entity.CentroMedico;
 import cl.rednorte.ms_gestion.service.CentroMedicoService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/centros-medicos")
