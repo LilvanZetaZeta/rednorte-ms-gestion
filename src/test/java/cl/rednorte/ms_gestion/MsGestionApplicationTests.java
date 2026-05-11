@@ -1,13 +1,12 @@
-package cl.rednorte.ms_registro;
+package cl.rednorte.ms_gestion;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MsRegistroApplicationTests {
+class MsGestionApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    void contextLoads() {
+    }
 }
