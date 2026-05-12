@@ -76,6 +76,11 @@ public class UsuarioController {
         Long centroId = request.get("centroId");
         return ResponseEntity.ok(service.actualizarCentroMedico(id, centroId));
     }
+    
+    @PatchMapping("/{id}/especialidades")
+    public ResponseEntity<Usuario> actualizarEspecialidades(@PathVariable Long id, @RequestBody List<Long> especialidadIds) {
+        return ResponseEntity.ok(service.actualizarEspecialidades(id, especialidadIds));
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {

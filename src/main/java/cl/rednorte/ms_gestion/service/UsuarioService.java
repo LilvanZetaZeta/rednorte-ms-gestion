@@ -96,5 +96,21 @@ public class UsuarioService {
         return usuarioRepository.save(u);
     }
 
+    public Usuario actualizarEspecialidades(Long usuarioId, List<Long> especialidadIds) {
+        Usuario u = usuarioRepository.findById(usuarioId).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if (u.getRol() != Usuario.RolUsuario.MEDICO) {
+            throw new RuntimeException("Solo se pueden asignar especialidades a médicos");
+        }
+        
+        if (especialidadIds == null || especialidadIds.isEmpty()) {
+            u.setEspecialidades(List.of());
+        } else {
+            List<Especialidad> especialidades = especialidadRepository.findAllById(especialidadIds);
+            u.setEspecialidades(especialidades);
+        }
+        
+        return usuarioRepository.save(u);
+    }
+
     public void eliminarUsuario(Long id) { usuarioRepository.deleteById(id); }
 }
