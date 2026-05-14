@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,10 +46,12 @@ public class Reserva {
     private LocalDateTime fechaHora;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "origen", nullable = false, columnDefinition = "origen_reserva")
     private OrigenReserva origen = OrigenReserva.WEB;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "estado", nullable = false, columnDefinition = "estado_reserva")
     private EstadoReserva estado = EstadoReserva.VIGENTE;
 
