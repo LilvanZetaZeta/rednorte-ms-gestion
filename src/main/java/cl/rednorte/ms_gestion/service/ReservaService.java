@@ -34,7 +34,7 @@ public class ReservaService {
                     a.getAuthority().equals("ROLE_DIRECTOR")
                 );
 
-        Usuario paciente = (esAdmin && req.getPacienteId() != null)
+        Usuario paciente = (req.getPacienteId() != null)
                 ? usuarioRepository.findById(req.getPacienteId()).orElseThrow(() -> new RuntimeException("Paciente no encontrado"))
                 : usuarioRepository.findByIdAuth(idAuthActual).orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
