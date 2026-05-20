@@ -26,4 +26,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     @Query(value = "SELECT count(*) FROM usuario WHERE CAST(rol AS text) = :#{#rol.name()}", nativeQuery = true)
     long countByRol(@Param("rol") Usuario.RolUsuario rol);
+
+    List<Usuario> findByRolAndCentroMedicoIsNull(Usuario.RolUsuario rol);
 }

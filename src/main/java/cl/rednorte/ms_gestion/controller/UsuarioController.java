@@ -29,6 +29,9 @@ public class UsuarioController {
     @GetMapping
     public List<Usuario> listar() { return service.listarTodos(); }
 
+    @GetMapping("/admins-disponibles")
+    public List<Usuario> listarAdminsDisponibles() { return service.listarAdministradoresDisponibles(); }
+
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> getById(@PathVariable Long id) { return ResponseEntity.ok(service.obtenerPorId(id)); }
 
@@ -59,6 +62,16 @@ public class UsuarioController {
         try {
             String correo = request.get("correo");
             return ResponseEntity.ok(service.asignarRolMedicoPorCorreo(correo));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/asignar-admin")
+    public ResponseEntity<?> asignarAdmin(@RequestBody Map<String, String> request) {
+        try {
+            String correo = request.get("correo");
+            return ResponseEntity.ok(service.asignarRolAdminPorCorreo(correo));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

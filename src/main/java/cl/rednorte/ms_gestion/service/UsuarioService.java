@@ -73,6 +73,14 @@ public class UsuarioService {
         return usuarioRepository.save(u);
     }
 
+    public Usuario asignarRolAdminPorCorreo(String correo) {
+        Usuario u = usuarioRepository.findByCorreo(correo)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el correo: " + correo));
+        
+        u.setRol(Usuario.RolUsuario.ADMINISTRATIVO);
+        return usuarioRepository.save(u);
+    }
+
     @Autowired private CentroMedicoRepository centroMedicoRepository;
 
     public List<Usuario> listarPersonalStaff() {
@@ -110,6 +118,10 @@ public class UsuarioService {
         }
         
         return usuarioRepository.save(u);
+    }
+
+    public List<Usuario> listarAdministradoresDisponibles() {
+        return usuarioRepository.findByRolAndCentroMedicoIsNull(Usuario.RolUsuario.ADMINISTRATIVO);
     }
 
     public void eliminarUsuario(Long id) { usuarioRepository.deleteById(id); }
