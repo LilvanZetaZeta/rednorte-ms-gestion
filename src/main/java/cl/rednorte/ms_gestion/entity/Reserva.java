@@ -56,5 +56,14 @@ public class Reserva {
     private EstadoReserva estado = EstadoReserva.VIGENTE;
 
     public enum OrigenReserva { WEB, PRESENCIAL }
-    public enum EstadoReserva { VIGENTE, CANCELADA }
+    
+    // Estados ampliados para soportar el flujo de la secretaria
+    public enum EstadoReserva { 
+        VIGENTE, 
+        CONFIRMADA, 
+        ATENDIDO, 
+        NO_ASISTE, 
+        CANCELADA, 
+        PENDIENTE_CANCELACION_ADMIN 
+    }
 }
