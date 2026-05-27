@@ -12,6 +12,9 @@ import cl.rednorte.ms_gestion.entity.Usuario;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+
+    //PORTAL SE ENCARGA DE LAS LISTAS
+    
     Optional<Usuario> findByCorreo(String correo);
 
     List<Usuario> findByRolNot(Usuario.RolUsuario rol);

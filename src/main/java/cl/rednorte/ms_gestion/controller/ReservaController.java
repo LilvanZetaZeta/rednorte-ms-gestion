@@ -19,7 +19,7 @@ import cl.rednorte.ms_gestion.service.ReservaService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/reservas")
+@RequestMapping("/api/gestion/reservas")
 public class ReservaController {
 
     @Autowired private ReservaService service;

@@ -11,6 +11,8 @@ import cl.rednorte.ms_gestion.entity.Reserva;
 
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
+
+    //PORTAL SE ENCARGA DE LAS LISTAS
     List<Reserva> findByPaciente_IdAuth(String idAuth);
     List<Reserva> findByPacienteId(Long pacienteId);
     List<Reserva> findByCentroId(Long centroId);

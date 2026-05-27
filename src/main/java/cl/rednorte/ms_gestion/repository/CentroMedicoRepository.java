@@ -10,6 +10,7 @@ import cl.rednorte.ms_gestion.entity.CentroMedico;
 @Repository
 public interface CentroMedicoRepository extends JpaRepository<CentroMedico, Long> {
 
+    //PORTAL SE ENCARGA DE LAS LISTAS
     List<CentroMedico> findByRegionAndComunaIgnoreCase(String region, String comuna);
 
     List<CentroMedico> findByComunaIgnoreCase(String comuna);
