@@ -9,6 +9,8 @@ import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
 
 @Repository
 public interface ListaEsperaLocalRepository extends JpaRepository<ListaEsperaLocal, Long> {
+
+    //PORTAL SE ENCARGA DE LAS LISTAS
     List<ListaEsperaLocal> findByCentroIdOrderByPrioridadAsc(Long centroId);
     List<ListaEsperaLocal> findByPacienteId(Long pacienteId);
 }
