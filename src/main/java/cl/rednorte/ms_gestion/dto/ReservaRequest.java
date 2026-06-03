@@ -3,6 +3,7 @@ package cl.rednorte.ms_gestion.dto;
 import java.time.LocalDateTime;
 
 import cl.rednorte.ms_gestion.entity.Reserva.OrigenReserva;
+import cl.rednorte.ms_gestion.entity.Reserva.TipoReserva;
 import cl.rednorte.ms_gestion.validation.ValidRut;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -26,6 +27,9 @@ public class ReservaRequest {
     
     @NotNull(message = "La fecha y hora son requeridas")
     private LocalDateTime fechaHora;
+
+    @NotNull(message = "El tipo de reserva es requerido")
+    private TipoReserva tipoReserva = TipoReserva.CONSULTA_MEDICA;
     
     private OrigenReserva origen = OrigenReserva.WEB;
 }

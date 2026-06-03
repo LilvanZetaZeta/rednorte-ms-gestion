@@ -55,7 +55,14 @@ public class Reserva {
     @Column(name = "estado", nullable = false, columnDefinition = "estado_reserva")
     private EstadoReserva estado = EstadoReserva.VIGENTE;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "tipo_reserva", nullable = false, columnDefinition = "tipo_reserva")
+    private TipoReserva tipoReserva = TipoReserva.CONSULTA_MEDICA;
+
     public enum OrigenReserva { WEB, PRESENCIAL }
+
+    public enum TipoReserva { CONSULTA_MEDICA, EXAMEN_IMAGENOLOGIA, PROCEDIMIENTO_QUIROFANO }
     
     // Estados ampliados para soportar el flujo de la secretaria
     public enum EstadoReserva { 

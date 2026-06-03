@@ -6,11 +6,14 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cl.rednorte.ms_gestion.client.CupoLiberadoClient;
 import cl.rednorte.ms_gestion.client.NotificacionClient;
+import cl.rednorte.ms_gestion.dto.CupoLiberadoEvent;
 import cl.rednorte.ms_gestion.dto.NotificacionReservaRequest;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
 import cl.rednorte.ms_gestion.entity.CentroMedico;
@@ -27,6 +30,7 @@ public class ReservaService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private CentroMedicoRepository centroMedicoRepository;
     @Autowired private NotificacionClient notificacionClient;
+    @Autowired private CupoLiberadoClient cupoLiberadoClient;
 
     @Transactional
     public Reserva crear(ReservaRequest req) {
@@ -83,6 +87,7 @@ public class ReservaService {
         reserva.setMedico(medico);
         reserva.setCentro(centro);
         reserva.setFechaHora(req.getFechaHora());
+        reserva.setTipoReserva(req.getTipoReserva());
         reserva.setOrigen(req.getOrigen());
         reserva.setEstado(Reserva.EstadoReserva.VIGENTE);
 
@@ -157,7 +162,26 @@ public class ReservaService {
         }
 
         reserva.setEstado(Reserva.EstadoReserva.CANCELADA);
-        return reservaRepository.save(reserva);
+        Reserva guardada = reservaRepository.save(reserva);
+        notificarCupoLiberadoAutonomo(guardada);
+        return guardada;
+    }
+
+    @Async
+    public void notificarCupoLiberadoAutonomo(Reserva reserva) {
+        try {
+            CupoLiberadoEvent event = new CupoLiberadoEvent();
+            event.setMedicoId(reserva.getMedico().getId());
+            event.setCentroId(reserva.getCentro().getId());
+            event.setFechaHora(reserva.getFechaHora());
+            event.setEspecialidad(reserva.getMedico().getEspecialidades() != null && !reserva.getMedico().getEspecialidades().isEmpty()
+                    ? reserva.getMedico().getEspecialidades().get(0).getNombre()
+                    : "GENERAL");
+            event.setTipoProcedimiento(reserva.getTipoReserva().name());
+            cupoLiberadoClient.notificarCupoLiberado(event);
+        } catch (Exception e) {
+            System.err.println("[ms-gestion] Fallo evento cupo liberado: " + e.getMessage());
+        }
     }
  
     public void eliminar(Long id) {
