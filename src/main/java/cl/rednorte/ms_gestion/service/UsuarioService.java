@@ -19,14 +19,16 @@ import jakarta.persistence.EntityNotFoundException;
 @Service
 public class UsuarioService {
 
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private EspecialidadRepository especialidadRepository;
-    @Autowired private CentroMedicoRepository centroMedicoRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @Autowired
+    private EspecialidadRepository especialidadRepository;
+    @Autowired
+    private CentroMedicoRepository centroMedicoRepository;
 
-    // Métodos de lectura interna (necesarios para que los updates funcionen)
-    public Usuario obtenerPorId(Long id) { 
+    public Usuario obtenerPorId(Long id) {
         return usuarioRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id)); 
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
     }
 
     @Transactional
@@ -39,13 +41,14 @@ public class UsuarioService {
         }
 
         Usuario u = new Usuario();
-        u.setIdAuth(req.getIdAuth()); 
+        u.setIdAuth(req.getIdAuth());
         u.setRut(req.getRut());
         u.setNombreCompleto(req.getNombreCompleto());
         u.setCorreo(req.getCorreo());
         u.setRol(req.getRol() != null ? req.getRol() : Usuario.RolUsuario.PACIENTE);
 
-        if (u.getRol() == Usuario.RolUsuario.MEDICO && req.getEspecialidadIds() != null && !req.getEspecialidadIds().isEmpty()) {
+        if (u.getRol() == Usuario.RolUsuario.MEDICO && req.getEspecialidadIds() != null
+                && !req.getEspecialidadIds().isEmpty()) {
             List<Especialidad> especialidades = especialidadRepository.findAllById(req.getEspecialidadIds());
             if (especialidades.isEmpty()) {
                 throw new IllegalArgumentException("Las especialidades proporcionadas no existen.");
@@ -70,14 +73,14 @@ public class UsuarioService {
         if (req.getEspecialidades() != null) {
             u.setEspecialidades(req.getEspecialidades());
         }
-        
+
         return usuarioRepository.save(u);
     }
 
     @Transactional
     public Usuario parchearUsuario(Long id, Map<String, Object> updates) {
         Usuario u = obtenerPorId(id);
-        
+
         if (updates.containsKey("correo")) {
             String nuevoCorreo = (String) updates.get("correo");
             if (!u.getCorreo().equalsIgnoreCase(nuevoCorreo) && usuarioRepository.existsByCorreo(nuevoCorreo)) {
@@ -88,19 +91,19 @@ public class UsuarioService {
         if (updates.containsKey("nombreCompleto")) {
             u.setNombreCompleto((String) updates.get("nombreCompleto"));
         }
-        
+
         return usuarioRepository.save(u);
     }
 
     @Transactional
     public Usuario asignarRolMedicoPorCorreo(String correo) {
         Usuario u = usuarioRepository.findByCorreo(correo)
-            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con el correo: " + correo));
-        
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con el correo: " + correo));
+
         if (u.getRol() == Usuario.RolUsuario.MEDICO) {
             throw new IllegalStateException("El usuario ya tiene el rol de Médico.");
         }
-        
+
         u.setRol(Usuario.RolUsuario.MEDICO);
         return usuarioRepository.save(u);
     }
@@ -108,12 +111,12 @@ public class UsuarioService {
     @Transactional
     public Usuario asignarRolAdminPorCorreo(String correo) {
         Usuario u = usuarioRepository.findByCorreo(correo)
-            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con el correo: " + correo));
-        
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con el correo: " + correo));
+
         if (u.getRol() == Usuario.RolUsuario.ADMINISTRATIVO) {
             throw new IllegalStateException("El usuario ya tiene el rol de Administrativo.");
         }
-        
+
         u.setRol(Usuario.RolUsuario.ADMINISTRATIVO);
         return usuarioRepository.save(u);
     }
@@ -128,12 +131,12 @@ public class UsuarioService {
     @Transactional
     public Usuario actualizarCentroMedico(Long usuarioId, Long centroId) {
         Usuario u = obtenerPorId(usuarioId);
-        
+
         if (centroId == null) {
             u.setCentroMedico(null);
         } else {
             CentroMedico cm = centroMedicoRepository.findById(centroId)
-                .orElseThrow(() -> new EntityNotFoundException("Centro médico no encontrado con ID: " + centroId));
+                    .orElseThrow(() -> new EntityNotFoundException("Centro médico no encontrado con ID: " + centroId));
             u.setCentroMedico(cm);
         }
         return usuarioRepository.save(u);
@@ -142,11 +145,11 @@ public class UsuarioService {
     @Transactional
     public Usuario actualizarEspecialidades(Long usuarioId, List<Long> especialidadIds) {
         Usuario u = obtenerPorId(usuarioId);
-        
+
         if (u.getRol() != Usuario.RolUsuario.MEDICO) {
             throw new IllegalStateException("Solo se pueden asignar especialidades a usuarios con rol de MÉDICO.");
         }
-        
+
         if (especialidadIds == null || especialidadIds.isEmpty()) {
             u.setEspecialidades(List.of());
         } else {
@@ -156,15 +159,15 @@ public class UsuarioService {
             }
             u.setEspecialidades(especialidades);
         }
-        
+
         return usuarioRepository.save(u);
     }
 
     @Transactional
-    public void eliminarUsuario(Long id) { 
+    public void eliminarUsuario(Long id) {
         if (!usuarioRepository.existsById(id)) {
             throw new EntityNotFoundException("No se puede eliminar: Usuario no encontrado.");
         }
-        usuarioRepository.deleteById(id); 
+        usuarioRepository.deleteById(id);
     }
 }

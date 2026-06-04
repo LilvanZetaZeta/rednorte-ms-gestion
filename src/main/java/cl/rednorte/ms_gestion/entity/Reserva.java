@@ -29,17 +29,17 @@ public class Reserva {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "paciente_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Usuario paciente;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "medico_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Usuario medico;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "centro_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private CentroMedico centro;
 
     @Column(name = "fecha_hora", nullable = false)
@@ -60,17 +60,20 @@ public class Reserva {
     @Column(name = "tipo_reserva", nullable = false, columnDefinition = "tipo_reserva")
     private TipoReserva tipoReserva = TipoReserva.CONSULTA_MEDICA;
 
-    public enum OrigenReserva { WEB, PRESENCIAL }
+    public enum OrigenReserva {
+        WEB, PRESENCIAL
+    }
 
-    public enum TipoReserva { CONSULTA_MEDICA, EXAMEN_IMAGENOLOGIA, PROCEDIMIENTO_QUIROFANO }
-    
-    // Estados ampliados para soportar el flujo de la secretaria
-    public enum EstadoReserva { 
-        VIGENTE, 
-        CONFIRMADA, 
-        ATENDIDO, 
-        NO_ASISTE, 
-        CANCELADA, 
-        PENDIENTE_CANCELACION_ADMIN 
+    public enum TipoReserva {
+        CONSULTA_MEDICA, EXAMEN_IMAGENOLOGIA, PROCEDIMIENTO_QUIROFANO
+    }
+
+    public enum EstadoReserva {
+        VIGENTE,
+        CONFIRMADA,
+        ATENDIDO,
+        NO_ASISTE,
+        CANCELADA,
+        PENDIENTE_CANCELACION_ADMIN
     }
 }
