@@ -26,11 +26,16 @@ import cl.rednorte.ms_gestion.repository.UsuarioRepository;
 @Service
 public class ReservaService {
 
-    @Autowired private ReservaRepository reservaRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private CentroMedicoRepository centroMedicoRepository;
-    @Autowired private NotificacionClient notificacionClient;
-    @Autowired private CupoLiberadoClient cupoLiberadoClient;
+    @Autowired
+    private ReservaRepository reservaRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @Autowired
+    private CentroMedicoRepository centroMedicoRepository;
+    @Autowired
+    private NotificacionClient notificacionClient;
+    @Autowired
+    private CupoLiberadoClient cupoLiberadoClient;
 
     @Transactional
     public Reserva crear(ReservaRequest req) {
@@ -41,18 +46,17 @@ public class ReservaService {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SECRETARIA"));
 
         boolean esAdmin = auth.getAuthorities().stream()
-                .anyMatch(a ->
-                    a.getAuthority().equals("ROLE_ADMINISTRATIVO") ||
-                    a.getAuthority().equals("ROLE_DIRECTOR") ||
-                    esSecretaria
-                );
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMINISTRATIVO") ||
+                        a.getAuthority().equals("ROLE_DIRECTOR") ||
+                        esSecretaria);
 
-        // CONTROL DE AISLAMIENTO: Validar centro de la secretaria en la creación
         if (esSecretaria) {
             Usuario secretaria = usuarioRepository.findByIdAuth(idAuthActual)
                     .orElseThrow(() -> new RuntimeException("Secretaria no encontrada en los registros principales"));
-            if (secretaria.getCentroMedico() == null || !secretaria.getCentroMedico().getId().equals(req.getCentroId())) {
-                throw new RuntimeException("Operación inválida: No puedes crear reservas para una sucursal distinta a la tuya.");
+            if (secretaria.getCentroMedico() == null
+                    || !secretaria.getCentroMedico().getId().equals(req.getCentroId())) {
+                throw new RuntimeException(
+                        "Operación inválida: No puedes crear reservas para una sucursal distinta a la tuya.");
             }
         }
 
@@ -64,14 +68,15 @@ public class ReservaService {
         } else if (req.getPacienteRut() != null && esAdmin) {
             paciente = usuarioRepository.findByRut(req.getPacienteRut()).orElseGet(() -> {
                 if (req.getPacienteCorreo() == null || req.getPacienteNombreCompleto() == null) {
-                    throw new RuntimeException("El RUT no existe. Se requiere correo y nombre para registrar al paciente.");
+                    throw new RuntimeException(
+                            "El RUT no existe. Se requiere correo y nombre para registrar al paciente.");
                 }
                 Usuario nuevoPaciente = new Usuario();
                 nuevoPaciente.setRut(req.getPacienteRut());
                 nuevoPaciente.setCorreo(req.getPacienteCorreo());
                 nuevoPaciente.setNombreCompleto(req.getPacienteNombreCompleto());
-                nuevoPaciente.setRol(Usuario.RolUsuario.PACIENTE); 
-                nuevoPaciente.setIdAuth(UUID.randomUUID().toString()); 
+                nuevoPaciente.setRol(Usuario.RolUsuario.PACIENTE);
+                nuevoPaciente.setIdAuth(UUID.randomUUID().toString());
                 return usuarioRepository.save(nuevoPaciente);
             });
         } else {
@@ -79,8 +84,10 @@ public class ReservaService {
                     .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
         }
 
-        Usuario medico = usuarioRepository.findById(req.getMedicoId()).orElseThrow(() -> new RuntimeException("Médico no encontrado"));
-        CentroMedico centro = centroMedicoRepository.findById(req.getCentroId()).orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
+        Usuario medico = usuarioRepository.findById(req.getMedicoId())
+                .orElseThrow(() -> new RuntimeException("Médico no encontrado"));
+        CentroMedico centro = centroMedicoRepository.findById(req.getCentroId())
+                .orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
 
         Reserva reserva = new Reserva();
         reserva.setPaciente(paciente);
@@ -111,8 +118,10 @@ public class ReservaService {
 
     public Reserva actualizarTotal(Long id, ReservaRequest req) {
         Reserva r = obtenerPorId(id);
-        r.setCentro(centroMedicoRepository.findById(req.getCentroId()).orElseThrow(() -> new RuntimeException("Centro médico no encontrado")));
-        r.setMedico(usuarioRepository.findById(req.getMedicoId()).orElseThrow(() -> new RuntimeException("Médico no encontrado")));
+        r.setCentro(centroMedicoRepository.findById(req.getCentroId())
+                .orElseThrow(() -> new RuntimeException("Centro médico no encontrado")));
+        r.setMedico(usuarioRepository.findById(req.getMedicoId())
+                .orElseThrow(() -> new RuntimeException("Médico no encontrado")));
         r.setFechaHora(req.getFechaHora());
         return reservaRepository.save(r);
     }
@@ -120,17 +129,18 @@ public class ReservaService {
     @Transactional
     public Reserva parchear(Long id, Map<String, Object> updates) {
         Reserva r = obtenerPorId(id);
-        
+
         var auth = SecurityContextHolder.getContext().getAuthentication();
         boolean esSecretaria = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SECRETARIA"));
 
-        // CONTROL DE AISLAMIENTO: Validar centro de la secretaria al cambiar asistencia o estados
         if (esSecretaria) {
             Usuario secretaria = usuarioRepository.findByIdAuth(auth.getName())
                     .orElseThrow(() -> new RuntimeException("Secretaria no encontrada"));
-            if (secretaria.getCentroMedico() == null || !secretaria.getCentroMedico().getId().equals(r.getCentro().getId())) {
-                throw new RuntimeException("Acceso denegado: No tienes facultades operativas sobre las citas de otros recintos.");
+            if (secretaria.getCentroMedico() == null
+                    || !secretaria.getCentroMedico().getId().equals(r.getCentro().getId())) {
+                throw new RuntimeException(
+                        "Acceso denegado: No tienes facultades operativas sobre las citas de otros recintos.");
             }
         }
 
@@ -139,11 +149,11 @@ public class ReservaService {
         }
         return reservaRepository.save(r);
     }
-   
+
     @Transactional
     public Reserva cancelar(Long id) {
         Reserva reserva = obtenerPorId(id);
-        
+
         var auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isSecretaria = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SECRETARIA"));
@@ -151,7 +161,7 @@ public class ReservaService {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"));
 
         long horasFaltantes = ChronoUnit.HOURS.between(LocalDateTime.now(), reserva.getFechaHora());
-        
+
         if (horasFaltantes < 24) {
             if (isPaciente) {
                 throw new RuntimeException("No puede cancelar su cita con menos de 24 horas de anticipación.");
@@ -174,16 +184,17 @@ public class ReservaService {
             event.setMedicoId(reserva.getMedico().getId());
             event.setCentroId(reserva.getCentro().getId());
             event.setFechaHora(reserva.getFechaHora());
-            event.setEspecialidad(reserva.getMedico().getEspecialidades() != null && !reserva.getMedico().getEspecialidades().isEmpty()
-                    ? reserva.getMedico().getEspecialidades().get(0).getNombre()
-                    : "GENERAL");
+            event.setEspecialidad(reserva.getMedico().getEspecialidades() != null
+                    && !reserva.getMedico().getEspecialidades().isEmpty()
+                            ? reserva.getMedico().getEspecialidades().get(0).getNombre()
+                            : "GENERAL");
             event.setTipoProcedimiento(reserva.getTipoReserva().name());
             cupoLiberadoClient.notificarCupoLiberado(event);
         } catch (Exception e) {
             System.err.println("[ms-gestion] Fallo evento cupo liberado: " + e.getMessage());
         }
     }
- 
+
     public void eliminar(Long id) {
         reservaRepository.deleteById(id);
     }
