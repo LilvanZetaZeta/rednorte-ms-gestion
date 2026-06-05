@@ -28,4 +28,7 @@ public class HistorialCita {
 
     @Column(columnDefinition = "TEXT")
     private String procedimientoRealizado;
+
+    @Column(name = "reserva_id")
+    private Long reservaId;
 }
