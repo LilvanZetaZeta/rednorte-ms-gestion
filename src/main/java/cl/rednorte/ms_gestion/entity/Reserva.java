@@ -57,7 +57,7 @@ public class Reserva {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tipo_reserva", nullable = false, columnDefinition = "tipo_reserva")
+    @Column(name = "tipo_reserva", nullable = false, columnDefinition = "tiporeserva default 'CONSULTA_MEDICA'")
     private TipoReserva tipoReserva = TipoReserva.CONSULTA_MEDICA;
 
     public enum OrigenReserva {
