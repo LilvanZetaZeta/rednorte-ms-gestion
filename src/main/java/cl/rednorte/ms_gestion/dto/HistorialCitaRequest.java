@@ -16,4 +16,6 @@ public class HistorialCitaRequest {
     private String observaciones;
 
     private String procedimientoRealizado;
+
+    private Long reservaId;
 }

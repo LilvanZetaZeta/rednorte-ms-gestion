@@ -14,16 +14,18 @@ import java.time.LocalDateTime;
 @Service
 public class HistorialCitaService {
 
-    @Autowired private HistorialCitaRepository historialRepo;
-    @Autowired private UsuarioRepository usuarioRepo;
+    @Autowired
+    private HistorialCitaRepository historialRepo;
+    @Autowired
+    private UsuarioRepository usuarioRepo;
 
     @Transactional
     public HistorialCita crearRegistro(HistorialCitaRequest req) {
         Usuario paciente = usuarioRepo.findById(req.getPacienteId())
-            .orElseThrow(() -> new EntityNotFoundException("Paciente no encontrado"));
-            
+                .orElseThrow(() -> new EntityNotFoundException("Paciente no encontrado"));
+
         Usuario medico = usuarioRepo.findById(req.getMedicoId())
-            .orElseThrow(() -> new EntityNotFoundException("Médico no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Médico no encontrado"));
 
         HistorialCita historial = new HistorialCita();
         historial.setPaciente(paciente);
@@ -31,6 +33,7 @@ public class HistorialCitaService {
         historial.setFechaAtencion(LocalDateTime.now());
         historial.setObservaciones(req.getObservaciones());
         historial.setProcedimientoRealizado(req.getProcedimientoRealizado());
+        historial.setReservaId(req.getReservaId());
 
         return historialRepo.save(historial);
     }
