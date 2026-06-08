@@ -10,4 +10,5 @@ public class ListaEsperaRequest {
     @NotNull(message = "El ID del paciente es requerido")
     private Long pacienteId;
     private Integer prioridad;
+    private String especialidad;
 }

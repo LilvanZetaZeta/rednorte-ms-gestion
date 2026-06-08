@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cl.rednorte.ms_gestion.dto.ListaEsperaRequest;
-import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
 import cl.rednorte.ms_gestion.entity.CentroMedico;
+import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
 import cl.rednorte.ms_gestion.entity.Usuario;
 import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
 import cl.rednorte.ms_gestion.repository.ListaEsperaLocalRepository;
@@ -52,6 +52,7 @@ public class ListaEsperaLocalService {
         l.setCentro(centro);
         l.setPaciente(paciente);
         l.setPrioridad(req.getPrioridad());
+        l.setEspecialidad(req.getEspecialidad());
         
         return repository.save(l);
     }

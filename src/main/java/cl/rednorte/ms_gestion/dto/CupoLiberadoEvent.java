@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class CupoLiberadoEvent {
+    private Long reservaOriginalId;
     private Long medicoId;
     private Long centroId;
     private LocalDateTime fechaHora;

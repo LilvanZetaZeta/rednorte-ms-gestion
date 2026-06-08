@@ -181,6 +181,7 @@ public class ReservaService {
     public void notificarCupoLiberadoAutonomo(Reserva reserva) {
         try {
             CupoLiberadoEvent event = new CupoLiberadoEvent();
+            event.setReservaOriginalId(reserva.getId());
             event.setMedicoId(reserva.getMedico().getId());
             event.setCentroId(reserva.getCentro().getId());
             event.setFechaHora(reserva.getFechaHora());
