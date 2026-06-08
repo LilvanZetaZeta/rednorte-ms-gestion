@@ -29,4 +29,7 @@ public class ListaEsperaLocal {
 
     @Column(name = "prioridad", nullable = false)
     private Integer prioridad = 0;
+
+    @Column(name = "especialidad")
+    private String especialidad;
 }
