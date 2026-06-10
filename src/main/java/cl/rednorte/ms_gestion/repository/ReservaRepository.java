@@ -1,5 +1,6 @@
 package cl.rednorte.ms_gestion.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,14 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     
     @Query(value = "SELECT count(*) FROM reserva WHERE CAST(estado AS text) = :#{#estado.name()}", nativeQuery = true)
     long countByEstado(@Param("estado") Reserva.EstadoReserva estado);
+
+    @Query("SELECT r FROM Reserva r " +
+           "WHERE r.medico.id = :medicoId " +
+           "AND r.fechaHora BETWEEN :inicio AND :fin " +
+           "AND r.estado IN :estados")
+    List<Reserva> findByMedicoIdAndFechaHoraBetweenAndEstadoIn(
+            @Param("medicoId") Long medicoId, 
+            @Param("inicio") LocalDateTime inicio, 
+            @Param("fin") LocalDateTime fin, 
+            @Param("estados") List<Reserva.EstadoReserva> estados);
 }

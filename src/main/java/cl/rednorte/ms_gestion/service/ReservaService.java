@@ -2,6 +2,7 @@ package cl.rednorte.ms_gestion.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import cl.rednorte.ms_gestion.client.CupoLiberadoClient;
 import cl.rednorte.ms_gestion.client.NotificacionClient;
+import cl.rednorte.ms_gestion.dto.BloqueoAgendaRequest;
 import cl.rednorte.ms_gestion.dto.CupoLiberadoEvent;
 import cl.rednorte.ms_gestion.dto.NotificacionReservaRequest;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
@@ -201,5 +203,31 @@ public class ReservaService {
     private Reserva obtenerPorId(Long id) {
         return reservaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada: id=" + id));
+    }
+
+    @Transactional
+    public void bloquearAgendaYProcesarCitas(BloqueoAgendaRequest req) {
+        
+        java.time.LocalDateTime inicioDia = req.getFechaBloqueo().atStartOfDay();
+        java.time.LocalDateTime finDia = req.getFechaBloqueo().atTime(23, 59, 59);
+
+        List<Reserva> reservasActivas = reservaRepository.findByMedicoIdAndFechaHoraBetweenAndEstadoIn(
+            req.getMedicoId(), 
+            inicioDia, 
+            finDia, 
+            List.of(Reserva.EstadoReserva.VIGENTE, Reserva.EstadoReserva.CONFIRMADA)
+        );
+
+        if (reservasActivas.isEmpty()) {
+            return;
+        }
+        
+        for (Reserva reserva : reservasActivas) {
+            reserva.setEstado(Reserva.EstadoReserva.CANCELADA);
+        }
+
+        reservaRepository.saveAll(reservasActivas);
+        
+        System.out.println("Se han cancelado " + reservasActivas.size() + " citas del médico ID " + req.getMedicoId() + " para la fecha " + req.getFechaBloqueo());
     }
 }
