@@ -42,17 +42,17 @@ public class ReservaService {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         String idAuthActual = auth.getName();
 
-        boolean esSecretaria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_SECRETARIA"));
+        Usuario usuarioActual = usuarioRepository.findByIdAuth(idAuthActual).orElse(null);
 
-        boolean esAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMINISTRATIVO") ||
-                        a.getAuthority().equals("ROLE_DIRECTOR") ||
-                        esSecretaria);
+        boolean esSecretaria = usuarioActual != null && usuarioActual.getRol() == Usuario.RolUsuario.SECRETARIA;
+
+        boolean esAdmin = usuarioActual != null && (
+                usuarioActual.getRol() == Usuario.RolUsuario.ADMINISTRATIVO ||
+                usuarioActual.getRol() == Usuario.RolUsuario.DIRECTOR ||
+                usuarioActual.getRol() == Usuario.RolUsuario.SECRETARIA);
 
         if (esSecretaria) {
-            Usuario secretaria = usuarioRepository.findByIdAuth(idAuthActual)
-                    .orElseThrow(() -> new RuntimeException("Secretaria no encontrada en los registros principales"));
+            Usuario secretaria = usuarioActual;
             if (secretaria.getCentroMedico() == null
                     || !secretaria.getCentroMedico().getId().equals(req.getCentroId())) {
                 throw new RuntimeException(
@@ -131,12 +131,11 @@ public class ReservaService {
         Reserva r = obtenerPorId(id);
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean esSecretaria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_SECRETARIA"));
+        Usuario usuarioActual = usuarioRepository.findByIdAuth(auth.getName()).orElse(null);
+        boolean esSecretaria = usuarioActual != null && usuarioActual.getRol() == Usuario.RolUsuario.SECRETARIA;
 
         if (esSecretaria) {
-            Usuario secretaria = usuarioRepository.findByIdAuth(auth.getName())
-                    .orElseThrow(() -> new RuntimeException("Secretaria no encontrada"));
+            Usuario secretaria = usuarioActual;
             if (secretaria.getCentroMedico() == null
                     || !secretaria.getCentroMedico().getId().equals(r.getCentro().getId())) {
                 throw new RuntimeException(
@@ -155,10 +154,9 @@ public class ReservaService {
         Reserva reserva = obtenerPorId(id);
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isSecretaria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_SECRETARIA"));
-        boolean isPaciente = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"));
+        Usuario usuarioActual = usuarioRepository.findByIdAuth(auth.getName()).orElse(null);
+        boolean isSecretaria = usuarioActual != null && usuarioActual.getRol() == Usuario.RolUsuario.SECRETARIA;
+        boolean isPaciente = usuarioActual != null && usuarioActual.getRol() == Usuario.RolUsuario.PACIENTE;
 
         long horasFaltantes = ChronoUnit.HOURS.between(LocalDateTime.now(), reserva.getFechaHora());
 
