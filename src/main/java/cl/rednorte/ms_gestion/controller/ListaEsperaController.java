@@ -1,0 +1,33 @@
+package cl.rednorte.ms_gestion.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import cl.rednorte.ms_gestion.dto.ListaEsperaRequest;
+import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
+import cl.rednorte.ms_gestion.service.ListaEsperaLocalService;
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/api/gestion/lista-espera")
+public class ListaEsperaController {
+    
+    @Autowired private ListaEsperaLocalService service;
+
+    @PostMapping 
+    public ResponseEntity<ListaEsperaLocal> create(@Valid @RequestBody ListaEsperaRequest req) { 
+        return ResponseEntity.ok(service.crear(req)); 
+    }
+
+    @PutMapping("/{id}") 
+    public ResponseEntity<ListaEsperaLocal> update(@PathVariable Long id, @Valid @RequestBody ListaEsperaRequest req) { 
+        return ResponseEntity.ok(service.actualizar(id, req)); 
+    }
+
+    @DeleteMapping("/{id}") 
+    public ResponseEntity<Void> delete(@PathVariable Long id) { 
+        service.eliminar(id); 
+        return ResponseEntity.noContent().build(); 
+    }
+}
