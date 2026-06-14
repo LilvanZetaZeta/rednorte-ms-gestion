@@ -25,6 +25,9 @@ public class CentroMedicoService {
         if (c.getNombreSucursal() == null || c.getNombreSucursal().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de la sucursal es obligatorio.");
         }
+        if (repository.findByNombreSucursalIgnoreCase(c.getNombreSucursal()).isPresent()) {
+            throw new IllegalArgumentException("El centro médico '" + c.getNombreSucursal() + "' ya existe en el sistema.");
+        }
         return repository.save(c); 
     }
 
@@ -35,6 +38,12 @@ public class CentroMedicoService {
         if (req.getNombreSucursal() == null || req.getNombreSucursal().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de la sucursal no puede estar vacío.");
         }
+
+        repository.findByNombreSucursalIgnoreCase(req.getNombreSucursal()).ifPresent(existente -> {
+            if (!existente.getId().equals(id)) {
+                throw new IllegalArgumentException("El centro médico '" + req.getNombreSucursal() + "' ya existe en el sistema.");
+            }
+        });
 
         c.setNombreSucursal(req.getNombreSucursal());
         c.setRegion(req.getRegion());
@@ -48,17 +57,28 @@ public class CentroMedicoService {
     public CentroMedico parchearCentro(Long id, Map<String, Object> updates) {
         CentroMedico c = obtenerPorId(id);
         
-        updates.forEach((k, v) -> {
-            switch (k) {
-                case "nombreSucursal" -> {
-                    if (v == null || ((String) v).trim().isEmpty()) throw new IllegalArgumentException("El nombre no puede estar vacío.");
-                    c.setNombreSucursal((String) v);
-                }
-                case "region" -> c.setRegion((String) v);
-                case "comuna" -> c.setComuna((String) v);
-                case "direccion" -> c.setDireccion((String) v);
+        if (updates.containsKey("nombreSucursal")) {
+            String v = (String) updates.get("nombreSucursal");
+            if (v == null || v.trim().isEmpty()) {
+                throw new IllegalArgumentException("El nombre no puede estar vacío.");
             }
-        });
+            repository.findByNombreSucursalIgnoreCase(v).ifPresent(existente -> {
+                if (!existente.getId().equals(id)) {
+                    throw new IllegalArgumentException("El centro médico '" + v + "' ya existe en el sistema.");
+                }
+            });
+            c.setNombreSucursal(v);
+        }
+        if (updates.containsKey("region")) {
+            c.setRegion((String) updates.get("region"));
+        }
+        if (updates.containsKey("comuna")) {
+            c.setComuna((String) updates.get("comuna"));
+        }
+        if (updates.containsKey("direccion")) {
+            c.setDireccion((String) updates.get("direccion"));
+        }
+
         return repository.save(c);
     }
 

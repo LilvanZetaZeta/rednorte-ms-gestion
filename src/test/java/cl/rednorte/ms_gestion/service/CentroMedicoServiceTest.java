@@ -90,6 +90,19 @@ class CentroMedicoServiceTest {
     }
 
     @Test
+    @DisplayName("crearCentro -> Debe lanzar IllegalArgumentException si el nombre de la sucursal ya existe")
+    void crearCentro_NombreDuplicado_LanzaException() {
+        Mockito.when(repository.findByNombreSucursalIgnoreCase("RedNorte Pudahuel")).thenReturn(Optional.of(centroBase));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.crearCentro(centroBase);
+        });
+
+        assertEquals("El centro médico 'RedNorte Pudahuel' ya existe en el sistema.", exception.getMessage());
+        verifySaveCalled(0);
+    }
+
+    @Test
     @DisplayName("actualizarCentro -> Debe modificar todos los campos si el payload es válido")
     void actualizarCentro_Valido_ModificaYGuarda() {
         CentroMedico request = new CentroMedico();
@@ -119,6 +132,27 @@ class CentroMedicoServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             service.actualizarCentro(1L, request);
         });
+        verifySaveCalled(0);
+    }
+
+    @Test
+    @DisplayName("actualizarCentro -> Debe lanzar IllegalArgumentException si el nuevo nombre ya está en uso por otra sucursal")
+    void actualizarCentro_NombreDuplicado_LanzaException() {
+        CentroMedico request = new CentroMedico();
+        request.setNombreSucursal("RedNorte Maipú");
+
+        CentroMedico otroCentro = new CentroMedico();
+        otroCentro.setId(2L);
+        otroCentro.setNombreSucursal("RedNorte Maipú");
+
+        Mockito.when(repository.findById(1L)).thenReturn(Optional.of(centroBase));
+        Mockito.when(repository.findByNombreSucursalIgnoreCase("RedNorte Maipú")).thenReturn(Optional.of(otroCentro));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.actualizarCentro(1L, request);
+        });
+
+        assertEquals("El centro médico 'RedNorte Maipú' ya existe en el sistema.", exception.getMessage());
         verifySaveCalled(0);
     }
 
@@ -154,6 +188,27 @@ class CentroMedicoServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             service.parchearCentro(1L, updates);
         });
+        verifySaveCalled(0);
+    }
+
+    @Test
+    @DisplayName("parchearCentro -> Debe lanzar IllegalArgumentException si el nuevo nombre ya está en uso por otra sucursal")
+    void parchearCentro_NombreDuplicado_LanzaException() {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("nombreSucursal", "RedNorte Maipú");
+
+        CentroMedico otroCentro = new CentroMedico();
+        otroCentro.setId(2L);
+        otroCentro.setNombreSucursal("RedNorte Maipú");
+
+        Mockito.when(repository.findById(1L)).thenReturn(Optional.of(centroBase));
+        Mockito.when(repository.findByNombreSucursalIgnoreCase("RedNorte Maipú")).thenReturn(Optional.of(otroCentro));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.parchearCentro(1L, updates);
+        });
+
+        assertEquals("El centro médico 'RedNorte Maipú' ya existe en el sistema.", exception.getMessage());
         verifySaveCalled(0);
     }
 

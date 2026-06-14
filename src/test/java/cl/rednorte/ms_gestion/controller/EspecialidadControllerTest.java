@@ -84,4 +84,30 @@ class EspecialidadControllerTest {
 
         Mockito.verify(especialidadService, Mockito.times(1)).eliminar(10L);
     }
+
+    @Test
+    @DisplayName("POST /api/gestion/especialidades -> Debe fallar con 400 Bad Request cuando el nombre es muy corto")
+    void create_NombreCorto_DebeRetornarBadRequest() throws Exception {
+        Especialidad espInvalida = new Especialidad();
+        espInvalida.setNombre("Hi"); // Menos de 3 caracteres
+
+        mockMvc.perform(post("/api/gestion/especialidades")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(espInvalida)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.nombre").exists());
+    }
+
+    @Test
+    @DisplayName("POST /api/gestion/especialidades -> Debe fallar con 400 Bad Request cuando el nombre contiene números")
+    void create_NombreConNumeros_DebeRetornarBadRequest() throws Exception {
+        Especialidad espInvalida = new Especialidad();
+        espInvalida.setNombre("Kinesiologia 123"); // Contiene caracteres no permitidos
+
+        mockMvc.perform(post("/api/gestion/especialidades")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(espInvalida)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.nombre").value("El nombre solo puede contener letras y espacios"));
+    }
 }
