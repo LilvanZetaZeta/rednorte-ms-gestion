@@ -118,5 +118,51 @@ class PerfilPacienteControllerTest {
             assertNotNull(e.getCause(), "La petición lanzó una excepción sin un manejador global configurado");
             assertInstanceOf(EntityNotFoundException.class, e.getCause());
         }
+     }
+
+    @Test
+    @DisplayName("POST /api/gestion/perfil-pacientes -> Debe retornar 400 Bad Request si el teléfono tiene un formato inválido")
+    void crear_TelefonoInvalido_RetornaBadRequest() throws Exception {
+        PerfilPacienteRequest reqInvalido = new PerfilPacienteRequest();
+        reqInvalido.setIdAuth("auth0|test");
+        reqInvalido.setPrevision("FONASA");
+        reqInvalido.setTelefonoContacto("+569abc12345"); // Contiene letras
+
+        mockMvc.perform(post("/api/gestion/perfil-pacientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqInvalido)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.telefonoContacto").value("Por favor ingresa un teléfono válido (9-15 números)"));
+    }
+
+    @Test
+    @DisplayName("POST /api/gestion/perfil-pacientes -> Debe retornar 400 Bad Request si el teléfono es demasiado corto")
+    void crear_TelefonoCorto_RetornaBadRequest() throws Exception {
+        PerfilPacienteRequest reqInvalido = new PerfilPacienteRequest();
+        reqInvalido.setIdAuth("auth0|test");
+        reqInvalido.setPrevision("FONASA");
+        reqInvalido.setTelefonoContacto("123456"); // Solo 6 dígitos
+
+        mockMvc.perform(post("/api/gestion/perfil-pacientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqInvalido)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.telefonoContacto").value("Por favor ingresa un teléfono válido (9-15 números)"));
+    }
+
+    @Test
+    @DisplayName("POST /api/gestion/perfil-pacientes -> Debe limpiar los espacios y guiones y pasar la validación")
+    void crear_TelefonoConEspaciosYGuiones_LimpiaYRetornaOk() throws Exception {
+        PerfilPacienteRequest reqValido = new PerfilPacienteRequest();
+        reqValido.setIdAuth(AUTH_ID_TEST);
+        reqValido.setPrevision("FONASA");
+        reqValido.setTelefonoContacto("+56 9-1234-5678"); // Contiene espacios y guiones
+
+        Mockito.when(perfilPacienteService.crearPerfil(any(PerfilPacienteRequest.class))).thenReturn(perfilMock);
+
+        mockMvc.perform(post("/api/gestion/perfil-pacientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqValido)))
+                .andExpect(status().isOk());
     }
 }

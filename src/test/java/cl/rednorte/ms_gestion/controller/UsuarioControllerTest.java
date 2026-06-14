@@ -136,6 +136,28 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.nombreCompleto").value("Iván Castro Modificado"));
     }
 
+    @Test
+    @DisplayName("PATCH /api/gestion/usuarios/{id} -> Debe retornar 400 Bad Request si los cambios parciales son inválidos")
+    void parchear_Invalido_RetornaBadRequest() throws Exception {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("nombreCompleto", "Iván 123"); // Contiene números
+
+        Map<String, String> errors = Map.of(
+            "nombreCompleto", "El nombre solo puede contener letras y espacios",
+            "error", "El nombre solo puede contener letras y espacios"
+        );
+
+        Mockito.when(usuarioService.parchearUsuario(eq(1L), eq(updates)))
+                .thenThrow(new cl.rednorte.ms_gestion.exception.FormValidationException(errors));
+
+        mockMvc.perform(patch("/api/gestion/usuarios/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updates)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.nombreCompleto").value("El nombre solo puede contener letras y espacios"))
+                .andExpect(jsonPath("$.error").value("El nombre solo puede contener letras y espacios"));
+    }
+
     // ==========================================
     // TESTS PARA: POST /asignar-medico y /asignar-admin
     // ==========================================

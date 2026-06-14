@@ -80,13 +80,48 @@ public class UsuarioService {
     @Transactional
     public Usuario parchearUsuario(Long id, Map<String, Object> updates) {
         Usuario u = obtenerPorId(id);
+        Map<String, String> errors = new java.util.HashMap<>();
 
         if (updates.containsKey("correo")) {
             String nuevoCorreo = (String) updates.get("correo");
-            if (!u.getCorreo().equalsIgnoreCase(nuevoCorreo) && usuarioRepository.existsByCorreo(nuevoCorreo)) {
-                throw new IllegalArgumentException("El nuevo correo ya está en uso por otro usuario.");
+            if (nuevoCorreo == null || nuevoCorreo.trim().isEmpty()) {
+                errors.put("correo", "El correo es requerido");
+            } else {
+                if (nuevoCorreo.length() > 255) {
+                    errors.put("correo", "El correo no puede exceder 255 caracteres");
+                }
+                if (!nuevoCorreo.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+                    errors.put("correo", "Por favor ingresa un correo válido (ej: usuario@ejemplo.com)");
+                }
+                if (!u.getCorreo().equalsIgnoreCase(nuevoCorreo) && usuarioRepository.existsByCorreo(nuevoCorreo)) {
+                    errors.put("correo", "El nuevo correo ya está en uso por otro usuario.");
+                }
             }
-            u.setCorreo(nuevoCorreo);
+        }
+
+        if (updates.containsKey("nombreCompleto")) {
+            String nuevoNombre = (String) updates.get("nombreCompleto");
+            if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
+                errors.put("nombreCompleto", "El nombre es requerido");
+            } else {
+                if (nuevoNombre.length() < 2) {
+                    errors.put("nombreCompleto", "El nombre debe tener al menos 2 caracteres");
+                }
+                if (nuevoNombre.length() > 50) {
+                    errors.put("nombreCompleto", "El nombre no puede exceder 50 caracteres");
+                }
+                if (!nuevoNombre.matches("^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\\s]+$")) {
+                    errors.put("nombreCompleto", "El nombre solo puede contener letras y espacios");
+                }
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new cl.rednorte.ms_gestion.exception.FormValidationException(errors);
+        }
+
+        if (updates.containsKey("correo")) {
+            u.setCorreo((String) updates.get("correo"));
         }
         if (updates.containsKey("nombreCompleto")) {
             u.setNombreCompleto((String) updates.get("nombreCompleto"));

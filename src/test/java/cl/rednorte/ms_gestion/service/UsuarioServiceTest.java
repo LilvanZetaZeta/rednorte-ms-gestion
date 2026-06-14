@@ -137,6 +137,40 @@ class UsuarioServiceTest {
         assertEquals("ivan@rednorte.cl", resultado.getCorreo()); // Mantiene original
     }
 
+    @Test
+    @DisplayName("parchearUsuario -> Lanza FormValidationException si el nombre contiene números")
+    void parchear_NombreInvalido_LanzaFormValidationException() {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("nombreCompleto", "Iván 123");
+
+        Mockito.when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioBase));
+
+        cl.rednorte.ms_gestion.exception.FormValidationException exception = assertThrows(
+            cl.rednorte.ms_gestion.exception.FormValidationException.class,
+            () -> service.parchearUsuario(1L, updates)
+        );
+
+        assertTrue(exception.getErrors().containsKey("nombreCompleto"));
+        assertEquals("El nombre solo puede contener letras y espacios", exception.getErrors().get("nombreCompleto"));
+    }
+
+    @Test
+    @DisplayName("parchearUsuario -> Lanza FormValidationException si el correo es inválido")
+    void parchear_CorreoInvalido_LanzaFormValidationException() {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("correo", "correo_invalido");
+
+        Mockito.when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioBase));
+
+        cl.rednorte.ms_gestion.exception.FormValidationException exception = assertThrows(
+            cl.rednorte.ms_gestion.exception.FormValidationException.class,
+            () -> service.parchearUsuario(1L, updates)
+        );
+
+        assertTrue(exception.getErrors().containsKey("correo"));
+        assertEquals("Por favor ingresa un correo válido (ej: usuario@ejemplo.com)", exception.getErrors().get("correo"));
+    }
+
     // ==========================================
     // SECCIÓN: Control de Roles y Flujos de Estado
     // ==========================================

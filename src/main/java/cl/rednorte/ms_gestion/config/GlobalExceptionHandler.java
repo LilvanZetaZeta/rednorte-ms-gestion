@@ -68,4 +68,10 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    // 6. Validaciones manuales de actualizaciones (ej. PATCH) -> 400 BAD REQUEST
+    @ExceptionHandler(cl.rednorte.ms_gestion.exception.FormValidationException.class)
+    public ResponseEntity<Map<String, String>> handleFormValidationExceptions(cl.rednorte.ms_gestion.exception.FormValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getErrors());
+    }
 }
