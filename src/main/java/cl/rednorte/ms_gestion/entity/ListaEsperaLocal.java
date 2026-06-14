@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import lombok.Data;
 
 @Data
@@ -21,6 +23,7 @@ public class ListaEsperaLocal {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "centro_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private CentroMedico centro;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -29,4 +32,7 @@ public class ListaEsperaLocal {
 
     @Column(name = "prioridad", nullable = false)
     private Integer prioridad = 0;
+
+    @Column(name = "especialidad")
+    private String especialidad;
 }

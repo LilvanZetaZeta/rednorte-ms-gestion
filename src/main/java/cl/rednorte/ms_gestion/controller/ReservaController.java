@@ -13,13 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cl.rednorte.ms_gestion.dto.BloqueoAgendaRequest;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
 import cl.rednorte.ms_gestion.entity.Reserva;
 import cl.rednorte.ms_gestion.service.ReservaService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/reservas")
+@RequestMapping("/api/gestion/reservas")
 public class ReservaController {
 
     @Autowired private ReservaService service;
@@ -33,6 +34,18 @@ public class ReservaController {
         }
     }
 
+    @PostMapping("/reasignaciones/agenda/bloquear")
+    public ResponseEntity<?> bloquearAgenda(@Valid @RequestBody BloqueoAgendaRequest req) {
+        try {
+            service.bloquearAgendaYProcesarCitas(req);
+            return ResponseEntity.ok(Map.of(
+                "mensaje", "Agenda bloqueada exitosamente. Las citas del día han sido canceladas para reasignación."
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    
     @PutMapping("/{id}")
     public ResponseEntity<Reserva> actualizar(
             @PathVariable Long id,

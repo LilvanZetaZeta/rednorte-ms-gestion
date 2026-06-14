@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,18 +21,10 @@ import cl.rednorte.ms_gestion.service.UsuarioService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/gestion/usuarios")
 public class UsuarioController {
+
     @Autowired private UsuarioService service;
-
-    @GetMapping
-    public List<Usuario> listar() { return service.listarTodos(); }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Usuario> getById(@PathVariable Long id) { return ResponseEntity.ok(service.obtenerPorId(id)); }
-
-    @GetMapping("/perfil/{idAuth}")
-    public ResponseEntity<Usuario> getPerfil(@PathVariable String idAuth) { return ResponseEntity.ok(service.obtenerPorIdAuth(idAuth)); }
 
     @PostMapping
     public ResponseEntity<?> registrar(@Valid @RequestBody RegistroRequest req) {
@@ -64,6 +55,15 @@ public class UsuarioController {
         }
     }
 
+    @PostMapping("/asignar-admin")
+    public ResponseEntity<?> asignarAdmin(@RequestBody Map<String, String> request) {
+        try {
+            String correo = request.get("correo");
+            return ResponseEntity.ok(service.asignarRolAdminPorCorreo(correo));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 
     @PatchMapping("/{id}/rol")
     public ResponseEntity<Usuario> actualizarRol(@PathVariable Long id, @RequestBody Map<String, String> request) {
@@ -75,6 +75,11 @@ public class UsuarioController {
     public ResponseEntity<Usuario> actualizarCentro(@PathVariable Long id, @RequestBody Map<String, Long> request) {
         Long centroId = request.get("centroId");
         return ResponseEntity.ok(service.actualizarCentroMedico(id, centroId));
+    }
+    
+    @PatchMapping("/{id}/especialidades")
+    public ResponseEntity<Usuario> actualizarEspecialidades(@PathVariable Long id, @RequestBody List<Long> especialidadIds) {
+        return ResponseEntity.ok(service.actualizarEspecialidades(id, especialidadIds));
     }
 
     @DeleteMapping("/{id}")

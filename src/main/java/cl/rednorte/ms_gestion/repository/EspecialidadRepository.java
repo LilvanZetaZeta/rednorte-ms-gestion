@@ -9,5 +9,6 @@ import cl.rednorte.ms_gestion.entity.Especialidad;
 
 @Repository
 public interface EspecialidadRepository extends JpaRepository<Especialidad, Long> {
+    //PORTAL SE ENCARGA DE LAS LISTAS
     Optional<Especialidad> findByNombreIgnoreCase(String nombre);
 }

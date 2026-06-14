@@ -12,9 +12,14 @@ import cl.rednorte.ms_gestion.entity.Usuario;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+
+    //PORTAL SE ENCARGA DE LAS LISTAS
+    
     Optional<Usuario> findByCorreo(String correo);
 
     List<Usuario> findByRolNot(Usuario.RolUsuario rol);
+
+    Optional<Usuario> findByRut(String rut);
 
     Optional<Usuario> findByIdAuth(String idAuth);
 
@@ -26,4 +31,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     @Query(value = "SELECT count(*) FROM usuario WHERE CAST(rol AS text) = :#{#rol.name()}", nativeQuery = true)
     long countByRol(@Param("rol") Usuario.RolUsuario rol);
+
+    List<Usuario> findByRolAndCentroMedicoIsNull(Usuario.RolUsuario rol);
+
+    List<Usuario> findByCentroMedicoId(Long centroMedicoId);
 }
