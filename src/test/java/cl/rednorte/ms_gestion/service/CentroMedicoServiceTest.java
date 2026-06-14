@@ -1,7 +1,13 @@
 package cl.rednorte.ms_gestion.service;
 
 import cl.rednorte.ms_gestion.entity.CentroMedico;
+import cl.rednorte.ms_gestion.entity.Usuario;
+import cl.rednorte.ms_gestion.entity.Reserva;
+import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
 import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
+import cl.rednorte.ms_gestion.repository.UsuarioRepository;
+import cl.rednorte.ms_gestion.repository.ReservaRepository;
+import cl.rednorte.ms_gestion.repository.ListaEsperaLocalRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,12 +24,23 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import java.util.List;
+import java.util.ArrayList;
 
 @ExtendWith(MockitoExtension.class)
 class CentroMedicoServiceTest {
 
     @Mock
     private CentroMedicoRepository repository;
+
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private ReservaRepository reservaRepository;
+
+    @Mock
+    private ListaEsperaLocalRepository listaEsperaLocalRepository;
 
     @InjectMocks
     private CentroMedicoService service;
@@ -213,13 +230,38 @@ class CentroMedicoServiceTest {
     }
 
     @Test
-    @DisplayName("eliminarCentro -> Debe borrar si el ID existe en la base de datos")
+    @DisplayName("eliminarCentro -> Debe borrar si el ID existe en la base de datos y realizar la cascada y desasociación")
     void eliminarCentro_Existe_EliminaExitosamente() {
         Mockito.when(repository.existsById(1L)).thenReturn(true);
-        Mockito.doNothing().when(repository).deleteById(1L);
+
+        Usuario mockUsuario = new Usuario();
+        mockUsuario.setId(10L);
+        mockUsuario.setCentroMedico(centroBase);
+        List<Usuario> mockUsuarios = new ArrayList<>();
+        mockUsuarios.add(mockUsuario);
+
+        Reserva mockReserva = new Reserva();
+        mockReserva.setId(20L);
+        mockReserva.setCentro(centroBase);
+        List<Reserva> mockReservas = new ArrayList<>();
+        mockReservas.add(mockReserva);
+
+        ListaEsperaLocal mockEspera = new ListaEsperaLocal();
+        mockEspera.setId(30L);
+        mockEspera.setCentro(centroBase);
+        List<ListaEsperaLocal> mockEsperas = new ArrayList<>();
+        mockEsperas.add(mockEspera);
+
+        Mockito.when(usuarioRepository.findByCentroMedicoId(1L)).thenReturn(mockUsuarios);
+        Mockito.when(reservaRepository.findByCentroId(1L)).thenReturn(mockReservas);
+        Mockito.when(listaEsperaLocalRepository.findByCentroIdOrderByPrioridadAsc(1L)).thenReturn(mockEsperas);
 
         assertDoesNotThrow(() -> service.eliminarCentro(1L));
 
+        assertNull(mockUsuario.getCentroMedico());
+        Mockito.verify(usuarioRepository, Mockito.times(1)).saveAll(mockUsuarios);
+        Mockito.verify(reservaRepository, Mockito.times(1)).deleteAll(mockReservas);
+        Mockito.verify(listaEsperaLocalRepository, Mockito.times(1)).deleteAll(mockEsperas);
         Mockito.verify(repository, Mockito.times(1)).deleteById(1L);
     }
 

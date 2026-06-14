@@ -3,6 +3,8 @@ package cl.rednorte.ms_gestion.entity;
 import java.util.List;
 
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,6 +69,7 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "centro_medico_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private CentroMedico centroMedico;
 
     public enum RolUsuario { PACIENTE, MEDICO, ADMINISTRATIVO, DIRECTOR, SECRETARIA }

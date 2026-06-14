@@ -33,4 +33,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     long countByRol(@Param("rol") Usuario.RolUsuario rol);
 
     List<Usuario> findByRolAndCentroMedicoIsNull(Usuario.RolUsuario rol);
+
+    List<Usuario> findByCentroMedicoId(Long centroMedicoId);
 }

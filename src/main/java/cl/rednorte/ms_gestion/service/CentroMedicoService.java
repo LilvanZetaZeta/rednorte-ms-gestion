@@ -7,13 +7,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cl.rednorte.ms_gestion.entity.CentroMedico;
+import cl.rednorte.ms_gestion.entity.Usuario;
+import cl.rednorte.ms_gestion.entity.Reserva;
+import cl.rednorte.ms_gestion.entity.ListaEsperaLocal;
 import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
+import cl.rednorte.ms_gestion.repository.UsuarioRepository;
+import cl.rednorte.ms_gestion.repository.ReservaRepository;
+import cl.rednorte.ms_gestion.repository.ListaEsperaLocalRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 
 @Service
 public class CentroMedicoService {
 
     @Autowired private CentroMedicoRepository repository;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private ReservaRepository reservaRepository;
+    @Autowired private ListaEsperaLocalRepository listaEsperaLocalRepository;
 
     public CentroMedico obtenerPorId(Long id) { 
         return repository.findById(id)
@@ -87,6 +97,23 @@ public class CentroMedicoService {
         if (!repository.existsById(id)) {
             throw new EntityNotFoundException("No se puede eliminar: Centro médico no encontrado.");
         }
+        
+        // 1. Desasociar usuarios vinculados a este centro médico (setear a NULL)
+        List<Usuario> usuarios = usuarioRepository.findByCentroMedicoId(id);
+        for (Usuario u : usuarios) {
+            u.setCentroMedico(null);
+        }
+        usuarioRepository.saveAll(usuarios);
+
+        // 2. Eliminar todas las reservas vinculadas a este centro médico
+        List<Reserva> reservas = reservaRepository.findByCentroId(id);
+        reservaRepository.deleteAll(reservas);
+
+        // 3. Eliminar todos los registros de lista de espera local vinculados a este centro médico
+        List<ListaEsperaLocal> esperas = listaEsperaLocalRepository.findByCentroIdOrderByPrioridadAsc(id);
+        listaEsperaLocalRepository.deleteAll(esperas);
+
+        // 4. Eliminar el centro médico
         repository.deleteById(id); 
     }
 }
