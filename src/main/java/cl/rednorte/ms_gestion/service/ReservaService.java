@@ -5,13 +5,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import cl.rednorte.ms_gestion.client.CupoLiberadoClient;
 import cl.rednorte.ms_gestion.client.NotificacionClient;
 import cl.rednorte.ms_gestion.dto.BloqueoAgendaRequest;
@@ -24,6 +22,7 @@ import cl.rednorte.ms_gestion.entity.Usuario;
 import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
 import cl.rednorte.ms_gestion.repository.ReservaRepository;
 import cl.rednorte.ms_gestion.repository.UsuarioRepository;
+import java.time.LocalTime;
 
 @Service
 public class ReservaService {
@@ -90,6 +89,19 @@ public class ReservaService {
                 .orElseThrow(() -> new RuntimeException("Médico no encontrado"));
         CentroMedico centro = centroMedicoRepository.findById(req.getCentroId())
                 .orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
+
+        // Validar que el slot no esté ya tomado por otro paciente
+        reservaRepository.findConflicto(medico.getId(), req.getFechaHora().toString()).ifPresent(r -> {
+            throw new RuntimeException("La hora seleccionada ya está reservada. Por favor elige otro horario disponible.");
+        });
+
+        // Validar que la hora sea un slot válido (08:00–19:40, cada 20 min)
+        LocalTime hora = req.getFechaHora().toLocalTime();
+        LocalTime inicio = java.time.LocalTime.of(8, 0);
+        LocalTime limiteFin = java.time.LocalTime.of(19, 40);
+        if (hora.isBefore(inicio) || hora.isAfter(limiteFin) || hora.getMinute() % 20 != 0) {
+            throw new RuntimeException("La hora seleccionada no corresponde a un horario válido (08:00–20:00, cada 20 minutos).");
+        }
 
         Reserva reserva = new Reserva();
         reserva.setPaciente(paciente);

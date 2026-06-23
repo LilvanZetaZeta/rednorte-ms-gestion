@@ -77,7 +77,7 @@ class ReservaServiceTest {
         requestBase = new ReservaRequest();
         requestBase.setCentroId(1L);
         requestBase.setMedicoId(20L);
-        requestBase.setFechaHora(LocalDateTime.now().plusDays(2)); // Cita en 48 horas
+        requestBase.setFechaHora(LocalDateTime.now().plusDays(2).withHour(10).withMinute(0).withSecond(0).withNano(0)); // Cita en 48 horas
         requestBase.setOrigen(Reserva.OrigenReserva.WEB);
         requestBase.setTipoReserva(Reserva.TipoReserva.CONSULTA_MEDICA);
 
