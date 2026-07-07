@@ -24,6 +24,12 @@ spring:
         jwt:
           jwk-set-uri: ${SUPABASE_JWKS_URI}
 
+ms-reasignacion:
+  url: ${MS_REASIGNACION_URL:http://localhost:8083}
+
+ms-notificaciones:
+  url: ${MS_NOTIFICACIONES_URL:http://localhost:8085}
+
 logging:
   level:
     org.springframework.security: DEBUG

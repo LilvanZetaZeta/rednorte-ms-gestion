@@ -16,6 +16,7 @@ import cl.rednorte.ms_gestion.dto.BloqueoAgendaRequest;
 import cl.rednorte.ms_gestion.dto.CupoLiberadoEvent;
 import cl.rednorte.ms_gestion.dto.NotificacionReservaRequest;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
+import cl.rednorte.ms_gestion.dto.TransferenciaReservaRequest;
 import cl.rednorte.ms_gestion.entity.CentroMedico;
 import cl.rednorte.ms_gestion.entity.Reserva;
 import cl.rednorte.ms_gestion.entity.Usuario;
@@ -228,6 +229,23 @@ public class ReservaService {
 
     public void eliminar(Long id) {
         reservaRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Reserva transferir(TransferenciaReservaRequest req) {
+        Reserva reserva = obtenerPorId(req.getReservaOriginalId());
+
+        if (reserva.getEstado() != Reserva.EstadoReserva.CANCELADA) {
+            throw new RuntimeException(
+                    "Solo se puede transferir una reserva cancelada. Estado actual: " + reserva.getEstado());
+        }
+
+        Usuario nuevoPaciente = usuarioRepository.findByIdAuth(req.getNuevoPacienteId())
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+        reserva.setPaciente(nuevoPaciente);
+        reserva.setEstado(Reserva.EstadoReserva.VIGENTE);
+        return reservaRepository.save(reserva);
     }
 
     private Reserva obtenerPorId(Long id) {
