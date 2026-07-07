@@ -90,6 +90,11 @@ public class ReservaService {
         CentroMedico centro = centroMedicoRepository.findById(req.getCentroId())
                 .orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
 
+        // Validar que no se reserve una cita en el pasado
+        if (req.getFechaHora().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("No se puede reservar una cita en una fecha y hora pasada.");
+        }
+
         // Validar que el slot no esté ya tomado por otro paciente
         reservaRepository.findConflicto(medico.getId(), req.getFechaHora().toString()).ifPresent(r -> {
             throw new RuntimeException("La hora seleccionada ya está reservada. Por favor elige otro horario disponible.");
@@ -132,6 +137,12 @@ public class ReservaService {
 
     public Reserva actualizarTotal(Long id, ReservaRequest req) {
         Reserva r = obtenerPorId(id);
+        
+        // Validar que no se actualice a una fecha y hora pasada
+        if (req.getFechaHora().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("No se puede reservar una cita en una fecha y hora pasada.");
+        }
+        
         r.setCentro(centroMedicoRepository.findById(req.getCentroId())
                 .orElseThrow(() -> new RuntimeException("Centro médico no encontrado")));
         r.setMedico(usuarioRepository.findById(req.getMedicoId())
@@ -172,14 +183,21 @@ public class ReservaService {
         boolean isSecretaria = usuarioActual != null && usuarioActual.getRol() == Usuario.RolUsuario.SECRETARIA;
         boolean isPaciente = usuarioActual != null && usuarioActual.getRol() == Usuario.RolUsuario.PACIENTE;
 
-        long horasFaltantes = ChronoUnit.HOURS.between(LocalDateTime.now(), reserva.getFechaHora());
-
-        if (horasFaltantes < 24) {
-            if (isPaciente) {
-                throw new RuntimeException("No puede cancelar su cita con menos de 24 horas de anticipación.");
-            } else if (isSecretaria) {
-                reserva.setEstado(Reserva.EstadoReserva.PENDIENTE_CANCELACION_ADMIN);
-                return reservaRepository.save(reserva);
+        LocalDateTime ahora = LocalDateTime.now();
+        if (reserva.getFechaHora().isBefore(ahora)) {
+            long horasTranscurridas = ChronoUnit.HOURS.between(reserva.getFechaHora(), ahora);
+            if (horasTranscurridas < 24) {
+                throw new RuntimeException("No se puede cancelar una cita que ya ha transcurrido hace menos de 24 horas.");
+            }
+        } else {
+            long horasFaltantes = ChronoUnit.HOURS.between(ahora, reserva.getFechaHora());
+            if (horasFaltantes < 24) {
+                if (isPaciente) {
+                    throw new RuntimeException("No puede cancelar su cita con menos de 24 horas de anticipación.");
+                } else if (isSecretaria) {
+                    reserva.setEstado(Reserva.EstadoReserva.PENDIENTE_CANCELACION_ADMIN);
+                    return reservaRepository.save(reserva);
+                }
             }
         }
 
