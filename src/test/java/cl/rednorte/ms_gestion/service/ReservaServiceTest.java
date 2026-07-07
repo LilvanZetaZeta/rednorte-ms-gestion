@@ -4,6 +4,7 @@ import cl.rednorte.ms_gestion.client.CupoLiberadoClient;
 import cl.rednorte.ms_gestion.client.NotificacionClient;
 import cl.rednorte.ms_gestion.dto.BloqueoAgendaRequest;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
+import cl.rednorte.ms_gestion.dto.TransferenciaReservaRequest;
 import cl.rednorte.ms_gestion.entity.CentroMedico;
 import cl.rednorte.ms_gestion.entity.Reserva;
 import cl.rednorte.ms_gestion.entity.Usuario;
@@ -241,5 +242,68 @@ class ReservaServiceTest {
 
         assertEquals(Reserva.EstadoReserva.CANCELADA, reservaMock.getEstado());
         Mockito.verify(reservaRepository, Mockito.times(1)).saveAll(citasDelDia);
+    }
+
+    // ==========================================
+    // SECCIÓN DE TESTS: método transferir()
+    // ==========================================
+
+    @Test
+    @DisplayName("transferir -> Flujo Normal: Reasigna la reserva cancelada al nuevo paciente y queda VIGENTE")
+    void transferir_ReservaCancelada_TransfiereYQuedaVigente() {
+        reservaMock.setEstado(Reserva.EstadoReserva.CANCELADA);
+
+        Usuario nuevoPacienteMock = new Usuario();
+        nuevoPacienteMock.setId(99L);
+        nuevoPacienteMock.setIdAuth("uuid-paciente-candidato");
+
+        TransferenciaReservaRequest req = new TransferenciaReservaRequest();
+        req.setReservaOriginalId(500L);
+        req.setNuevoPacienteId("uuid-paciente-candidato");
+
+        Mockito.when(reservaRepository.findById(500L)).thenReturn(Optional.of(reservaMock));
+        Mockito.when(usuarioRepository.findByIdAuth("uuid-paciente-candidato")).thenReturn(Optional.of(nuevoPacienteMock));
+        Mockito.when(reservaRepository.save(any(Reserva.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Reserva resultado = service.transferir(req);
+
+        assertEquals(Reserva.EstadoReserva.VIGENTE, resultado.getEstado());
+        assertEquals(nuevoPacienteMock, resultado.getPaciente());
+        Mockito.verify(reservaRepository, Mockito.times(1)).save(reservaMock);
+    }
+
+    @Test
+    @DisplayName("transferir -> Lanza excepción si la reserva original no está CANCELADA")
+    void transferir_ReservaNoCancelada_LanzaException() {
+        reservaMock.setEstado(Reserva.EstadoReserva.VIGENTE);
+
+        TransferenciaReservaRequest req = new TransferenciaReservaRequest();
+        req.setReservaOriginalId(500L);
+        req.setNuevoPacienteId("uuid-paciente-candidato");
+
+        Mockito.when(reservaRepository.findById(500L)).thenReturn(Optional.of(reservaMock));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> service.transferir(req));
+
+        assertTrue(exception.getMessage().contains("Solo se puede transferir una reserva cancelada"));
+        Mockito.verify(reservaRepository, Mockito.times(0)).save(any());
+    }
+
+    @Test
+    @DisplayName("transferir -> Lanza excepción si el nuevo paciente no existe")
+    void transferir_PacienteNoEncontrado_LanzaException() {
+        reservaMock.setEstado(Reserva.EstadoReserva.CANCELADA);
+
+        TransferenciaReservaRequest req = new TransferenciaReservaRequest();
+        req.setReservaOriginalId(500L);
+        req.setNuevoPacienteId("uuid-inexistente");
+
+        Mockito.when(reservaRepository.findById(500L)).thenReturn(Optional.of(reservaMock));
+        Mockito.when(usuarioRepository.findByIdAuth("uuid-inexistente")).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> service.transferir(req));
+
+        assertEquals("Paciente no encontrado", exception.getMessage());
+        Mockito.verify(reservaRepository, Mockito.times(0)).save(any());
     }
 }
