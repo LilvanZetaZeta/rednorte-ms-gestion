@@ -2,12 +2,11 @@ package cl.rednorte.ms_gestion.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import cl.rednorte.ms_gestion.entity.Reserva;
 
 @Repository
@@ -31,4 +30,14 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
             @Param("inicio") LocalDateTime inicio, 
             @Param("fin") LocalDateTime fin, 
             @Param("estados") List<Reserva.EstadoReserva> estados);
+
+    @Query(value = "SELECT * FROM reserva " +
+                   "WHERE medico_id = :medicoId " +
+                   "AND fecha_hora = CAST(:fechaHora AS timestamp) " +
+                   "AND CAST(estado AS text) NOT IN ('CANCELADA', 'NO_ASISTE') " +
+                   "LIMIT 1",
+           nativeQuery = true)
+    Optional<Reserva> findConflicto(
+            @Param("medicoId") Long medicoId,
+            @Param("fechaHora") String fechaHora);
 }

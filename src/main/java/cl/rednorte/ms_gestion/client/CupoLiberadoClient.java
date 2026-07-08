@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import cl.rednorte.ms_gestion.dto.CupoLiberadoEvent;
 
-@FeignClient(name = "ms-reasignacion", url = "http://localhost:8083")
+@FeignClient(name = "ms-reasignacion", url = "${ms-reasignacion.url}")
 public interface CupoLiberadoClient {
 
     @PostMapping("/api/reasignaciones/cupo-libre")

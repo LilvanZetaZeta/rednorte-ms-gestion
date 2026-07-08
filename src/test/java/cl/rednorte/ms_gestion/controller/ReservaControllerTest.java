@@ -3,6 +3,7 @@ package cl.rednorte.ms_gestion.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cl.rednorte.ms_gestion.dto.BloqueoAgendaRequest;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
+import cl.rednorte.ms_gestion.dto.TransferenciaReservaRequest;
 import cl.rednorte.ms_gestion.entity.Reserva;
 import cl.rednorte.ms_gestion.service.ReservaService;
 import org.junit.jupiter.api.BeforeEach;
@@ -198,5 +199,44 @@ class ReservaControllerTest {
                 .andExpect(status().isNoContent());
 
         Mockito.verify(reservaService, Mockito.times(1)).eliminar(100L);
+    }
+
+    // ==========================================
+    // TESTS PARA: POST /transferir
+    // ==========================================
+
+    @Test
+    @DisplayName("POST /api/gestion/reservas/transferir -> Debe retornar 200 OK y la reserva transferida")
+    void transferir_Valido_RetornaReservaTransferida() throws Exception {
+        TransferenciaReservaRequest requestTransferencia = new TransferenciaReservaRequest();
+        requestTransferencia.setReservaOriginalId(100L);
+        requestTransferencia.setNuevoPacienteId("uuid-paciente-candidato");
+
+        reservaMock.setEstado(Reserva.EstadoReserva.VIGENTE);
+        Mockito.when(reservaService.transferir(any(TransferenciaReservaRequest.class))).thenReturn(reservaMock);
+
+        mockMvc.perform(post("/api/gestion/reservas/transferir")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestTransferencia)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100L))
+                .andExpect(jsonPath("$.estado").value("VIGENTE"));
+    }
+
+    @Test
+    @DisplayName("POST /api/gestion/reservas/transferir -> Debe retornar 400 Bad Request si el servicio lanza RuntimeException")
+    void transferir_ReservaNoCancelada_RetornaBadRequest() throws Exception {
+        TransferenciaReservaRequest requestTransferencia = new TransferenciaReservaRequest();
+        requestTransferencia.setReservaOriginalId(100L);
+        requestTransferencia.setNuevoPacienteId("uuid-paciente-candidato");
+
+        Mockito.when(reservaService.transferir(any(TransferenciaReservaRequest.class)))
+                .thenThrow(new RuntimeException("Solo se puede transferir una reserva cancelada. Estado actual: VIGENTE"));
+
+        mockMvc.perform(post("/api/gestion/reservas/transferir")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestTransferencia)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Solo se puede transferir una reserva cancelada. Estado actual: VIGENTE"));
     }
 }

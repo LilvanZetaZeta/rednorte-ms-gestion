@@ -5,25 +5,25 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import cl.rednorte.ms_gestion.client.CupoLiberadoClient;
 import cl.rednorte.ms_gestion.client.NotificacionClient;
 import cl.rednorte.ms_gestion.dto.BloqueoAgendaRequest;
 import cl.rednorte.ms_gestion.dto.CupoLiberadoEvent;
 import cl.rednorte.ms_gestion.dto.NotificacionReservaRequest;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
+import cl.rednorte.ms_gestion.dto.TransferenciaReservaRequest;
 import cl.rednorte.ms_gestion.entity.CentroMedico;
 import cl.rednorte.ms_gestion.entity.Reserva;
 import cl.rednorte.ms_gestion.entity.Usuario;
 import cl.rednorte.ms_gestion.repository.CentroMedicoRepository;
 import cl.rednorte.ms_gestion.repository.ReservaRepository;
 import cl.rednorte.ms_gestion.repository.UsuarioRepository;
+import java.time.LocalTime;
 
 @Service
 public class ReservaService {
@@ -91,6 +91,24 @@ public class ReservaService {
         CentroMedico centro = centroMedicoRepository.findById(req.getCentroId())
                 .orElseThrow(() -> new RuntimeException("Centro médico no encontrado"));
 
+        // Validar que no se reserve una cita en el pasado
+        if (req.getFechaHora().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("No se puede reservar una cita en una fecha y hora pasada.");
+        }
+
+        // Validar que el slot no esté ya tomado por otro paciente
+        reservaRepository.findConflicto(medico.getId(), req.getFechaHora().toString()).ifPresent(r -> {
+            throw new RuntimeException("La hora seleccionada ya está reservada. Por favor elige otro horario disponible.");
+        });
+
+        // Validar que la hora sea un slot válido (08:00–19:40, cada 20 min)
+        LocalTime hora = req.getFechaHora().toLocalTime();
+        LocalTime inicio = java.time.LocalTime.of(8, 0);
+        LocalTime limiteFin = java.time.LocalTime.of(19, 40);
+        if (hora.isBefore(inicio) || hora.isAfter(limiteFin) || hora.getMinute() % 20 != 0) {
+            throw new RuntimeException("La hora seleccionada no corresponde a un horario válido (08:00–20:00, cada 20 minutos).");
+        }
+
         Reserva reserva = new Reserva();
         reserva.setPaciente(paciente);
         reserva.setMedico(medico);
@@ -120,6 +138,12 @@ public class ReservaService {
 
     public Reserva actualizarTotal(Long id, ReservaRequest req) {
         Reserva r = obtenerPorId(id);
+        
+        // Validar que no se actualice a una fecha y hora pasada
+        if (req.getFechaHora().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("No se puede reservar una cita en una fecha y hora pasada.");
+        }
+        
         r.setCentro(centroMedicoRepository.findById(req.getCentroId())
                 .orElseThrow(() -> new RuntimeException("Centro médico no encontrado")));
         r.setMedico(usuarioRepository.findById(req.getMedicoId())
@@ -160,14 +184,21 @@ public class ReservaService {
         boolean isSecretaria = usuarioActual != null && usuarioActual.getRol() == Usuario.RolUsuario.SECRETARIA;
         boolean isPaciente = usuarioActual != null && usuarioActual.getRol() == Usuario.RolUsuario.PACIENTE;
 
-        long horasFaltantes = ChronoUnit.HOURS.between(LocalDateTime.now(), reserva.getFechaHora());
-
-        if (horasFaltantes < 24) {
-            if (isPaciente) {
-                throw new RuntimeException("No puede cancelar su cita con menos de 24 horas de anticipación.");
-            } else if (isSecretaria) {
-                reserva.setEstado(Reserva.EstadoReserva.PENDIENTE_CANCELACION_ADMIN);
-                return reservaRepository.save(reserva);
+        LocalDateTime ahora = LocalDateTime.now();
+        if (reserva.getFechaHora().isBefore(ahora)) {
+            long horasTranscurridas = ChronoUnit.HOURS.between(reserva.getFechaHora(), ahora);
+            if (horasTranscurridas < 24) {
+                throw new RuntimeException("No se puede cancelar una cita que ya ha transcurrido hace menos de 24 horas.");
+            }
+        } else {
+            long horasFaltantes = ChronoUnit.HOURS.between(ahora, reserva.getFechaHora());
+            if (horasFaltantes < 24) {
+                if (isPaciente) {
+                    throw new RuntimeException("No puede cancelar su cita con menos de 24 horas de anticipación.");
+                } else if (isSecretaria) {
+                    reserva.setEstado(Reserva.EstadoReserva.PENDIENTE_CANCELACION_ADMIN);
+                    return reservaRepository.save(reserva);
+                }
             }
         }
 
@@ -198,6 +229,23 @@ public class ReservaService {
 
     public void eliminar(Long id) {
         reservaRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Reserva transferir(TransferenciaReservaRequest req) {
+        Reserva reserva = obtenerPorId(req.getReservaOriginalId());
+
+        if (reserva.getEstado() != Reserva.EstadoReserva.CANCELADA) {
+            throw new RuntimeException(
+                    "Solo se puede transferir una reserva cancelada. Estado actual: " + reserva.getEstado());
+        }
+
+        Usuario nuevoPaciente = usuarioRepository.findByIdAuth(req.getNuevoPacienteId())
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+        reserva.setPaciente(nuevoPaciente);
+        reserva.setEstado(Reserva.EstadoReserva.VIGENTE);
+        return reservaRepository.save(reserva);
     }
 
     private Reserva obtenerPorId(Long id) {
