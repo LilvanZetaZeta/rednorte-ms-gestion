@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cl.rednorte.ms_gestion.dto.BloqueoAgendaRequest;
 import cl.rednorte.ms_gestion.dto.ReservaRequest;
+import cl.rednorte.ms_gestion.dto.TransferenciaReservaRequest;
 import cl.rednorte.ms_gestion.entity.Reserva;
 import cl.rednorte.ms_gestion.service.ReservaService;
 import jakarta.validation.Valid;
@@ -73,5 +74,14 @@ public class ReservaController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/transferir")
+    public ResponseEntity<?> transferir(@Valid @RequestBody TransferenciaReservaRequest req) {
+        try {
+            return ResponseEntity.ok(service.transferir(req));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }
